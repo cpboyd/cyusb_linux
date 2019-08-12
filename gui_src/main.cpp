@@ -9,7 +9,7 @@
  * This program is the main GUI program for cyusb_suite for linux				*
 \***********************************************************************************************/
 #include <QtCore>
-#include <QtGui>
+#include <QtWidgets>
 #include <QtNetwork>
 
 #include <unistd.h>
@@ -146,23 +146,23 @@ static void update_devlist()
 }
 static void disable_vendor_extensions()
 {
-	mainwin->rb3_ramdl->setEnabled(FALSE);
-	mainwin->rb3_ramup->setEnabled(FALSE);
-	mainwin->rb3_eedl->setEnabled(FALSE);
-	mainwin->rb3_eeup->setEnabled(FALSE);
-	mainwin->rb3_getchip->setEnabled(FALSE);
-	mainwin->rb3_renum->setEnabled(FALSE);
+	mainwin->rb3_ramdl->setEnabled(false);
+	mainwin->rb3_ramup->setEnabled(false);
+	mainwin->rb3_eedl->setEnabled(false);
+	mainwin->rb3_eeup->setEnabled(false);
+	mainwin->rb3_getchip->setEnabled(false);
+	mainwin->rb3_renum->setEnabled(false);
 }
 
 static void enable_vendor_extensions()
 {
-	mainwin->rb3_ramdl->setEnabled(TRUE);
-	mainwin->rb3_ramup->setEnabled(TRUE);
-	mainwin->rb3_eedl->setEnabled(TRUE);
-	mainwin->rb3_eeup->setEnabled(TRUE);
-	mainwin->rb3_getchip->setEnabled(TRUE);
-	mainwin->rb3_renum->setEnabled(TRUE);
-	mainwin->rb3_custom->setChecked(TRUE);
+	mainwin->rb3_ramdl->setEnabled(true);
+	mainwin->rb3_ramup->setEnabled(true);
+	mainwin->rb3_eedl->setEnabled(true);
+	mainwin->rb3_eeup->setEnabled(true);
+	mainwin->rb3_getchip->setEnabled(true);
+	mainwin->rb3_renum->setEnabled(true);
+	mainwin->rb3_custom->setChecked(true);
 }
 
 static void detect_device(void)
@@ -174,16 +174,16 @@ static void detect_device(void)
 	if ( r == 1 ) {
 		mainwin->label_devtype->setText("FX2");
 		enable_vendor_extensions();
-		mainwin->tab_4->setEnabled(TRUE);
-		mainwin->tab_5->setEnabled(FALSE);
+		mainwin->tab_4->setEnabled(true);
+		mainwin->tab_5->setEnabled(false);
 		mainwin->tab2->setCurrentIndex(0);
 	}
 	else {
 		mainwin->label_devtype->setText("FX3");
 		disable_vendor_extensions();
-		mainwin->rb3_custom->setChecked(TRUE);
-		mainwin->tab_4->setEnabled(FALSE);
-		mainwin->tab_5->setEnabled(TRUE);
+		mainwin->rb3_custom->setChecked(true);
+		mainwin->tab_4->setEnabled(false);
+		mainwin->tab_5->setEnabled(true);
 		mainwin->tab2->setCurrentIndex(1);
 	}
 }
@@ -200,7 +200,7 @@ void ControlCenter::on_pb4_selfile_clicked()
 	filename = QFileDialog::getOpenFileName(this, "Select file to download...", ".", "Image files (*.img)");
 	mainwin->label4_file->setText(filename);
 	if ( filename != "" ) {
-		mainwin->pb4_start->setEnabled(TRUE);
+		mainwin->pb4_start->setEnabled(true);
 	}
 
 }
@@ -247,7 +247,7 @@ void ControlCenter::on_streamer_control_start_clicked ()
 	int  aiface  = mainwin->label_aif->text().toInt(&ok, 10);
 
 	// Disable the start button
-	mainwin->streamer_control_start->setEnabled (FALSE);
+	mainwin->streamer_control_start->setEnabled (false);
 
 	// Get the streamer parameters by querying the combo boxes.
 	temp = mainwin->streamer_ep_sel->currentText().toStdString().c_str();
@@ -280,10 +280,10 @@ void ControlCenter::on_streamer_control_start_clicked ()
 	streamer_set_params (ep, eptype, pktsize, reqsize, queuedepth);
 	if (streamer_start_xfer () == 0) {
 		// Test started properly. Enable the stop button.
-		mainwin->streamer_control_stop->setEnabled (TRUE);
+		mainwin->streamer_control_stop->setEnabled (true);
 	} else {
 		// Test could not start. Re-enable the start button.
-		mainwin->streamer_control_start->setEnabled (FALSE);
+		mainwin->streamer_control_start->setEnabled (false);
 	}
 }
 
@@ -295,8 +295,8 @@ void ControlCenter::on_streamer_control_stop_clicked ()
 		sleep (1);
 
 	// Now disable the stop button and enable the start button.
-	mainwin->streamer_control_stop->setEnabled (FALSE);
-	mainwin->streamer_control_start->setEnabled (TRUE);
+	mainwin->streamer_control_stop->setEnabled (false);
+	mainwin->streamer_control_start->setEnabled (true);
 
 	mainwin->streamer_out_passcnt->setText ("0");
 	mainwin->streamer_out_failcnt->setText ("0");
@@ -310,15 +310,15 @@ static void check_for_kernel_driver(void)
 
 	r = cyusb_kernel_driver_active(h, v);
 	if ( r == 1 ) {
-		mainwin->cb_kerneldriver->setEnabled(TRUE);
-		mainwin->cb_kerneldriver->setChecked(TRUE);
-		mainwin->pb_kerneldetach->setEnabled(TRUE);
-		mainwin->cb_kerneldriver->setEnabled(FALSE);
+		mainwin->cb_kerneldriver->setEnabled(true);
+		mainwin->cb_kerneldriver->setChecked(true);
+		mainwin->pb_kerneldetach->setEnabled(true);
+		mainwin->cb_kerneldriver->setEnabled(false);
 	}
 	else {
-		mainwin->cb_kerneldriver->setEnabled(FALSE);
-		mainwin->cb_kerneldriver->setChecked(FALSE);
-		mainwin->pb_kerneldetach->setEnabled(FALSE);
+		mainwin->cb_kerneldriver->setEnabled(false);
+		mainwin->cb_kerneldriver->setChecked(false);
+		mainwin->pb_kerneldetach->setEnabled(false);
 	}
 }
 
@@ -347,8 +347,8 @@ static void update_endpoints()
 	mainwin->streamer_out_passcnt->setText ("0");
 	mainwin->streamer_out_failcnt->setText ("0");
 	mainwin->streamer_out_perf->setText ("0");
-	mainwin->streamer_control_start->setEnabled (FALSE);
-	mainwin->streamer_control_stop->setEnabled (FALSE);
+	mainwin->streamer_control_start->setEnabled (false);
+	mainwin->streamer_control_stop->setEnabled (false);
 
 	for ( i = 0; i < summ_count; ++i ) {
 		if ( summ[i].ifnum != iface ) continue;
@@ -432,8 +432,8 @@ static void update_endpoints()
 		mainwin->streamer_size_sel->setCurrentIndex (4);
 		mainwin->streamer_queue_sel->setCurrentIndex (4);
 
-		mainwin->streamer_control_start->setEnabled (TRUE);
-		mainwin->streamer_control_stop->setEnabled (FALSE);
+		mainwin->streamer_control_start->setEnabled (true);
+		mainwin->streamer_control_stop->setEnabled (false);
 	}
 }
 
@@ -476,8 +476,8 @@ void ControlCenter::on_pb_setIFace_clicked()
 	mainwin->le_numAlt->setText(tval);
 	mainwin->sb_selectAIf->setMaximum(N - 1);
 	mainwin->sb_selectAIf->setValue(0);
-	mainwin->sb_selectAIf->setEnabled(TRUE);
-	mainwin->pb_setAltIf->setEnabled(TRUE);
+	mainwin->sb_selectAIf->setEnabled(true);
+	mainwin->pb_setAltIf->setEnabled(true);
 	M = mainwin->sb_selectIf->value();
 	sprintf(tval,"%d",M);
 	mainwin->label_if->setText(tval);
@@ -563,7 +563,7 @@ void get_config_details()
 		return ;
 	}
 	sprintf(tval,"%d",desc->bNumInterfaces);
-	mainwin->le_numIfaces->setReadOnly(TRUE);
+	mainwin->le_numIfaces->setReadOnly(true);
 	mainwin->le_numIfaces->setText(tval);
 	mainwin->sb_selectIf->setMaximum(desc->bNumInterfaces - 1);
 
@@ -705,10 +705,10 @@ void get_device_details()
 	r = cyusb_get_active_config_descriptor(h, &config_desc);
 	sprintf(tval,"%d",config_desc->bNumInterfaces);
 	mainwin->le_numIfaces->setText(tval);
-	mainwin->sb_selectIf->setEnabled(TRUE);
+	mainwin->sb_selectIf->setEnabled(true);
 	mainwin->sb_selectIf->setMaximum(config_desc->bNumInterfaces - 1);
 	mainwin->sb_selectIf->setValue(1);
-	mainwin->pb_setIFace->setEnabled(TRUE);
+	mainwin->pb_setIFace->setEnabled(true);
 
 	mainwin->lw_desc->clear();
 
@@ -761,15 +761,15 @@ static void clear_widgets()
 	mainwin->le_numIfaces->clear();
 	mainwin->le_numAlt->clear();
 	mainwin->sb_selectIf->clear();
-	mainwin->sb_selectIf->setEnabled(FALSE);
+	mainwin->sb_selectIf->setEnabled(false);
 	mainwin->sb_selectAIf->setValue(0);
-	mainwin->sb_selectAIf->setEnabled(FALSE);
+	mainwin->sb_selectAIf->setEnabled(false);
 	mainwin->lw_desc->clear();
-	mainwin->cb_kerneldriver->setChecked(FALSE);
-	mainwin->cb_kerneldriver->setEnabled(FALSE);
-	mainwin->pb_setIFace->setEnabled(FALSE);
-	mainwin->pb_kerneldetach->setEnabled(FALSE);
-	mainwin->pb_setAltIf->setEnabled(FALSE);
+	mainwin->cb_kerneldriver->setChecked(false);
+	mainwin->cb_kerneldriver->setEnabled(false);
+	mainwin->pb_setIFace->setEnabled(false);
+	mainwin->pb_kerneldetach->setEnabled(false);
+	mainwin->pb_setAltIf->setEnabled(false);
 	mainwin->label_devtype->setText("");
 
 	// Clear widgets on streamer tab
@@ -779,8 +779,8 @@ static void clear_widgets()
 	mainwin->streamer_out_passcnt->setText ("0");
 	mainwin->streamer_out_failcnt->setText ("0");
 	mainwin->streamer_out_perf->setText ("0");
-	mainwin->streamer_control_start->setEnabled (FALSE);
-	mainwin->streamer_control_stop->setEnabled (FALSE);
+	mainwin->streamer_control_start->setEnabled (false);
+	mainwin->streamer_control_stop->setEnabled (false);
 }
 
 static void set_if_aif()
@@ -830,10 +830,10 @@ void ControlCenter::on_pb_kerneldetach_clicked()
 
 	r = cyusb_detach_kernel_driver(h, mainwin->sb_selectIf->value());
 	if ( r == 0 ) {
-		mainwin->cb_kerneldriver->setEnabled(TRUE);
-		mainwin->cb_kerneldriver->setChecked(FALSE);
-		mainwin->cb_kerneldriver->setEnabled(FALSE);
-		mainwin->pb_kerneldetach->setEnabled(FALSE);
+		mainwin->cb_kerneldriver->setEnabled(true);
+		mainwin->cb_kerneldriver->setChecked(false);
+		mainwin->cb_kerneldriver->setEnabled(false);
+		mainwin->pb_kerneldetach->setEnabled(false);
 		mainwin->label_aif->clear();
 	}
 	else {
@@ -844,19 +844,19 @@ void ControlCenter::on_pb_kerneldetach_clicked()
 
 void ControlCenter::on_rb1_ram_clicked()
 {
-	mainwin->groupBox_3->setVisible(TRUE);
-	mainwin->groupBox_3->setEnabled(TRUE);
-	mainwin->rb_internal->setChecked(TRUE);
+	mainwin->groupBox_3->setVisible(true);
+	mainwin->groupBox_3->setEnabled(true);
+	mainwin->rb_internal->setChecked(true);
 }
 
 void ControlCenter::on_rb1_small_clicked()
 {
-	mainwin->groupBox_3->setVisible(FALSE);
+	mainwin->groupBox_3->setVisible(false);
 }
 
 void ControlCenter::on_rb1_large_clicked()
 {
-	mainwin->groupBox_3->setVisible(FALSE);
+	mainwin->groupBox_3->setVisible(false);
 }
 
 void ControlCenter::sigusr1_handler()
@@ -916,7 +916,7 @@ void ControlCenter::on_pb1_selfile_clicked()
 	       	filename = QFileDialog::getOpenFileName(this, "Select file to download...", ".", "IIC files (*.iic)");
 	mainwin->label1_selfile->setText(filename);
 	if ( filename != "" ) {
-		mainwin->pb1_start->setEnabled(TRUE);
+		mainwin->pb1_start->setEnabled(true);
 	}
 }	
 
@@ -966,111 +966,111 @@ void ControlCenter::on_pb_reset_clicked()
 
 void ControlCenter::on_rb3_ramdl_clicked()
 {
-	mainwin->rb3_out->setChecked(TRUE);
-	mainwin->gb_dir->setEnabled(FALSE);
+	mainwin->rb3_out->setChecked(true);
+	mainwin->gb_dir->setEnabled(false);
 	mainwin->le3_bm->setText("40");
-	mainwin->le3_bm->setReadOnly(TRUE);
+	mainwin->le3_bm->setReadOnly(true);
 	mainwin->le3_br->setText("A3");
-	mainwin->le3_br->setReadOnly(TRUE);
-	mainwin->le3_wlen->setReadOnly(TRUE);
-	mainwin->le3_out_hex->setEnabled(TRUE);
-	mainwin->le3_out_ascii->setEnabled(TRUE);
+	mainwin->le3_br->setReadOnly(true);
+	mainwin->le3_wlen->setReadOnly(true);
+	mainwin->le3_out_hex->setEnabled(true);
+	mainwin->le3_out_ascii->setEnabled(true);
 	mainwin->le3_wind->setText("0000");
-	mainwin->le3_wind->setReadOnly(TRUE);
+	mainwin->le3_wind->setReadOnly(true);
 	mainwin->le3_wlen->setText("");
 }
 
 void ControlCenter::on_rb3_ramup_clicked()
 {
-	mainwin->rb3_in->setChecked(TRUE);
-	mainwin->gb_dir->setEnabled(FALSE);
+	mainwin->rb3_in->setChecked(true);
+	mainwin->gb_dir->setEnabled(false);
 	mainwin->le3_bm->setText("C0");
-	mainwin->le3_bm->setReadOnly(TRUE);
+	mainwin->le3_bm->setReadOnly(true);
 	mainwin->le3_br->setText("A3");
-	mainwin->le3_br->setReadOnly(TRUE);
-	mainwin->le3_wlen->setReadOnly(FALSE);
-	mainwin->le3_out_hex->setEnabled(FALSE);
-	mainwin->le3_out_ascii->setEnabled(FALSE);
+	mainwin->le3_br->setReadOnly(true);
+	mainwin->le3_wlen->setReadOnly(false);
+	mainwin->le3_out_hex->setEnabled(false);
+	mainwin->le3_out_ascii->setEnabled(false);
 	mainwin->le3_wind->setText("0000");
-	mainwin->le3_wind->setReadOnly(TRUE);
+	mainwin->le3_wind->setReadOnly(true);
 
 }
 
 void ControlCenter::on_rb3_eedl_clicked()
 {
-	mainwin->rb3_out->setChecked(TRUE);
-	mainwin->gb_dir->setEnabled(FALSE);
+	mainwin->rb3_out->setChecked(true);
+	mainwin->gb_dir->setEnabled(false);
 	mainwin->le3_bm->setText("40");
-	mainwin->le3_bm->setReadOnly(TRUE);
+	mainwin->le3_bm->setReadOnly(true);
 	mainwin->le3_br->setText("A2");
-	mainwin->le3_br->setReadOnly(TRUE);
-	mainwin->le3_wlen->setReadOnly(TRUE);
-	mainwin->le3_out_hex->setEnabled(TRUE);
-	mainwin->le3_out_ascii->setEnabled(TRUE);
+	mainwin->le3_br->setReadOnly(true);
+	mainwin->le3_wlen->setReadOnly(true);
+	mainwin->le3_out_hex->setEnabled(true);
+	mainwin->le3_out_ascii->setEnabled(true);
 	mainwin->le3_wind->setText("0000");
-	mainwin->le3_wind->setReadOnly(TRUE);
+	mainwin->le3_wind->setReadOnly(true);
 	mainwin->le3_wlen->setText("");
 }
 
 
 void ControlCenter::on_rb3_eeup_clicked()
 {
-	mainwin->rb3_in->setChecked(TRUE);
-	mainwin->gb_dir->setEnabled(FALSE);
+	mainwin->rb3_in->setChecked(true);
+	mainwin->gb_dir->setEnabled(false);
 	mainwin->le3_bm->setText("C0");
-	mainwin->le3_bm->setReadOnly(TRUE);
+	mainwin->le3_bm->setReadOnly(true);
 	mainwin->le3_br->setText("A2");
-	mainwin->le3_br->setReadOnly(TRUE);
-	mainwin->le3_wlen->setReadOnly(FALSE);
-	mainwin->le3_out_hex->setEnabled(FALSE);
-	mainwin->le3_out_ascii->setEnabled(FALSE);
+	mainwin->le3_br->setReadOnly(true);
+	mainwin->le3_wlen->setReadOnly(false);
+	mainwin->le3_out_hex->setEnabled(false);
+	mainwin->le3_out_ascii->setEnabled(false);
 	mainwin->le3_wind->setText("0000");
-	mainwin->le3_wind->setReadOnly(TRUE);
+	mainwin->le3_wind->setReadOnly(true);
 }
 
 void ControlCenter::on_rb3_getchip_clicked()
 {
-	mainwin->gb_dir->setEnabled(FALSE);
+	mainwin->gb_dir->setEnabled(false);
 	mainwin->le3_bm->setText("C0");
-	mainwin->le3_bm->setReadOnly(TRUE);
+	mainwin->le3_bm->setReadOnly(true);
 	mainwin->le3_br->setText("A6");
-	mainwin->le3_br->setReadOnly(TRUE);
-	mainwin->le3_out_hex->setEnabled(FALSE);
-	mainwin->le3_out_ascii->setEnabled(FALSE);
+	mainwin->le3_br->setReadOnly(true);
+	mainwin->le3_out_hex->setEnabled(false);
+	mainwin->le3_out_ascii->setEnabled(false);
 	mainwin->le3_wind->setText("0000");
-	mainwin->le3_wind->setReadOnly(TRUE);
+	mainwin->le3_wind->setReadOnly(true);
 	mainwin->le3_wlen->setText("01");
-	mainwin->le3_wlen->setReadOnly(TRUE);
+	mainwin->le3_wlen->setReadOnly(true);
 }
 
 void ControlCenter::on_rb3_renum_clicked()
 {
-	mainwin->gb_dir->setEnabled(FALSE);
+	mainwin->gb_dir->setEnabled(false);
 	mainwin->le3_bm->setText("40");
-	mainwin->le3_bm->setReadOnly(TRUE);
+	mainwin->le3_bm->setReadOnly(true);
 	mainwin->le3_br->setText("A8");
-	mainwin->le3_br->setReadOnly(TRUE);
-	mainwin->le3_out_hex->setEnabled(FALSE);
-	mainwin->le3_out_ascii->setEnabled(FALSE);
+	mainwin->le3_br->setReadOnly(true);
+	mainwin->le3_out_hex->setEnabled(false);
+	mainwin->le3_out_ascii->setEnabled(false);
 	mainwin->le3_wind->setText("0000");
-	mainwin->le3_wind->setReadOnly(TRUE);
+	mainwin->le3_wind->setReadOnly(true);
 	mainwin->le3_wlen->setText("01");
-	mainwin->le3_wlen->setReadOnly(TRUE);
+	mainwin->le3_wlen->setReadOnly(true);
 }
 
 void ControlCenter::on_rb3_custom_clicked()
 {
-	mainwin->rb3_out->setChecked(TRUE);
-	mainwin->gb_dir->setEnabled(TRUE);
-	mainwin->le3_bm->setReadOnly(FALSE);
+	mainwin->rb3_out->setChecked(true);
+	mainwin->gb_dir->setEnabled(true);
+	mainwin->le3_bm->setReadOnly(false);
 	mainwin->le3_bm->setText("");
 	mainwin->le3_br->setText("");
-	mainwin->le3_br->setReadOnly(FALSE);
-	mainwin->le3_wlen->setReadOnly(FALSE);
+	mainwin->le3_br->setReadOnly(false);
+	mainwin->le3_wlen->setReadOnly(false);
 	mainwin->le3_wind->setText("");
-	mainwin->le3_wind->setReadOnly(FALSE);
-	mainwin->le3_out_hex->setEnabled(TRUE);
-	mainwin->le3_out_ascii->setEnabled(TRUE);
+	mainwin->le3_wind->setReadOnly(false);
+	mainwin->le3_out_hex->setEnabled(true);
+	mainwin->le3_out_ascii->setEnabled(true);
 	mainwin->le3_wlen->setText("");
 }
 
@@ -1079,18 +1079,18 @@ void ControlCenter::on_rb3_out_clicked()
 {
 	if ( !mainwin->rb3_custom->isChecked() )
 		mainwin->le3_bm->setText("40");
-	mainwin->le3_out_hex->setEnabled(TRUE);
-	mainwin->le3_out_ascii->setEnabled(TRUE);
-	mainwin->le3_wlen->setReadOnly(TRUE);
+	mainwin->le3_out_hex->setEnabled(true);
+	mainwin->le3_out_ascii->setEnabled(true);
+	mainwin->le3_wlen->setReadOnly(true);
 }
 
 void ControlCenter::on_rb3_in_clicked()
 {
 	if ( !mainwin->rb3_custom->isChecked() )
 		mainwin->le3_bm->setText("C0");
-	mainwin->le3_out_hex->setEnabled(FALSE);
-	mainwin->le3_out_ascii->setEnabled(FALSE);
-	mainwin->le3_wlen->setReadOnly(FALSE);
+	mainwin->le3_out_hex->setEnabled(false);
+	mainwin->le3_out_ascii->setEnabled(false);
+	mainwin->le3_wlen->setReadOnly(false);
 }
 
 void ControlCenter::on_pb3_selfile_clicked()
@@ -1105,7 +1105,7 @@ void ControlCenter::on_pb3_selfile_clicked()
 	filename = QFileDialog::getOpenFileName(this, "Select file to download...", ".", "Image files (*.hex)");
 	mainwin->lab3_selfile->setText(filename);
 	if ( filename != "" ) {
-		mainwin->pb3_dl->setEnabled(TRUE);
+		mainwin->pb3_dl->setEnabled(true);
 	}
 
 }
@@ -1115,7 +1115,7 @@ void ControlCenter::on_le3_out_ascii_textChanged()
 	char tbuf[5];
 	unsigned int sz;
 
-	QByteArray t = mainwin->le3_out_ascii->text().toAscii();
+	QByteArray t = mainwin->le3_out_ascii->text().toLatin1();
 
 	sz = (t.size() > 4096) ? 4096 : t.size();
 	memcpy (le3_out_data, (const char *)t.data(), sz);
@@ -1129,7 +1129,7 @@ void ControlCenter::on_le3_out_ascii_textEdited()
 	char tbuf[5];
 	unsigned int sz;
 
-	QByteArray t = mainwin->le3_out_ascii->text().toAscii();
+	QByteArray t = mainwin->le3_out_ascii->text().toLatin1();
 
 	sz = (t.size() > 4096) ? 4096 : t.size();
 	memcpy (le3_out_data, (const char *)t.data(), sz);
@@ -1147,7 +1147,7 @@ void ControlCenter::on_le3_out_hex_textEdited()
 	QValidator *validator = new QRegExpValidator(rx, this);
 	mainwin->le3_out_hex->setValidator(validator);
 
-	QByteArray t = mainwin->le3_out_hex->text().toAscii();
+	QByteArray t = mainwin->le3_out_hex->text().toLatin1();
 	QByteArray t2 = QByteArray::fromHex(t);
 
 	sz = (t2.size() > 4096) ? 4096 : t2.size();
@@ -1282,7 +1282,7 @@ void ControlCenter::on_le6_out_hex_textEdited()
 	QValidator *validator = new QRegExpValidator(rx, this);
 	mainwin->le6_out_hex->setValidator(validator);
 
-	QByteArray t = mainwin->le6_out_hex->text().toAscii();
+	QByteArray t = mainwin->le6_out_hex->text().toLatin1();
 	QByteArray t2 = QByteArray::fromHex(t);
 
 	sz = (t2.size () > 4096) ? 4096 : t2.size();
@@ -1300,7 +1300,7 @@ void ControlCenter::on_le6_out_ascii_textEdited()
 	char tbuf[5];
 	unsigned int sz;
 
-	QByteArray t = mainwin->le6_out_ascii->text().toAscii();
+	QByteArray t = mainwin->le6_out_ascii->text().toLatin1();
 
 	sz = (t.size () > 4096) ? 4096 : t.size();
 	memcpy (le6_out_data, (const char *)t.data(), sz);
@@ -1318,7 +1318,7 @@ void ControlCenter::on_le6_out_ascii_textChanged()
 	char tbuf[5];
 	unsigned int sz;
 
-	QByteArray t = mainwin->le6_out_ascii->text().toAscii();
+	QByteArray t = mainwin->le6_out_ascii->text().toLatin1();
 
 	sz = (t.size () > 4096) ? 4096 : t.size();
 	memcpy (le6_out_data, (const char *)t.data(), sz);
@@ -1346,7 +1346,7 @@ void ControlCenter::on_pb6_clear_clicked()
 
 void ControlCenter::on_rb6_constant_clicked()
 {
-	le6_value->setReadOnly(FALSE);
+	le6_value->setReadOnly(false);
 	le6_size->setText("512");
 
 }
@@ -1354,23 +1354,23 @@ void ControlCenter::on_rb6_constant_clicked()
 void ControlCenter::on_rb6_random_clicked()
 {
 	le6_size->setText("512");
-	le6_value->setReadOnly(TRUE);
+	le6_value->setReadOnly(true);
 }
 
 void ControlCenter::on_rb6_inc_clicked()
 {
 	le6_size->setText("512");
-	le6_value->setReadOnly(FALSE);
+	le6_value->setReadOnly(false);
 }
 
 
 void ControlCenter::on_cb6_loop_clicked()
 {
 	if ( mainwin->cb6_loop->isChecked() ) {
-		mainwin->pb6_rcv->setEnabled(FALSE);
+		mainwin->pb6_rcv->setEnabled(false);
 	}
 	else {
-		mainwin->pb6_rcv->setEnabled(TRUE);
+		mainwin->pb6_rcv->setEnabled(true);
 	}
 }
 
@@ -1751,7 +1751,7 @@ void ControlCenter::on_pb6_selin_clicked()
 		return;
 	}
 
-	mainwin->cb6_loop->setChecked(TRUE);	/* Should auto enable this, for data MUST come only from a file out */
+	mainwin->cb6_loop->setChecked(true);	/* Should auto enable this, for data MUST come only from a file out */
 
 	filename = QFileDialog::getSaveFileName(this, "Select file to write data to...", ".", "Any file (*)");
 	if ( filename == mainwin->le6_outfile->text() ) {
@@ -2087,14 +2087,14 @@ void ControlCenter::on_pb7_clear_clicked()
 
 void ControlCenter::on_rb7_enable_clicked()
 {
-	mainwin->lw7_out->setEnabled(TRUE);
-	mainwin->lw7_in->setEnabled(TRUE);
+	mainwin->lw7_out->setEnabled(true);
+	mainwin->lw7_in->setEnabled(true);
 }
 
 void ControlCenter::on_rb7_disable_clicked()
 {
-	mainwin->lw7_out->setEnabled(FALSE);
-	mainwin->lw7_in->setEnabled(FALSE);
+	mainwin->lw7_out->setEnabled(false);
+	mainwin->lw7_in->setEnabled(false);
 }
 
 static int multiple_instances()
@@ -2127,7 +2127,6 @@ int main(int argc, char **argv)
 {
 	int r;
 
-	QApplication::setStyle(new QCleanlooksStyle);
 	QApplication app(argc, argv);
 
 	if ( multiple_instances() ) {
