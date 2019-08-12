@@ -149,22 +149,20 @@ device_is_of_interest (
 		cyusb_device *d)
 {
 	int i;
-	int found = 0;
 	struct libusb_device_descriptor desc;
-	int vid;
-	int pid;
+	int vid, pid;
 
 	libusb_get_device_descriptor(d, &desc);
-	vid = desc.idProduct;
+	vid = desc.idVendor;
 	pid = desc.idProduct;
 
 	for ( i = 0; i < maxdevices; ++i ) {
-		if ( (vpd[i].vid == desc.idVendor) && (vpd[i].pid == desc.idProduct) ) {
-			found = 1;
-			break;
+		if ( (vpd[i].vid == vid) && (vpd[i].pid == pid) ) {
+			printf("Found device %04x %04x \n", vid, pid);
+			return 1;
 		}
 	}
-	return found;
+	return 0;
 }
 
 /* cyusb_getvendor:
@@ -201,7 +199,6 @@ renumerate (
 	cyusb_device *dev = NULL;
 	cyusb_handle *handle = NULL;
 	int           numdev;
-	int           found = 0;
 	int           i;
 	int           r;
 
@@ -218,7 +215,7 @@ renumerate (
 			cydev[nid].dev = tdev;
 			r = libusb_open(tdev, &cydev[nid].handle);
 			if ( r ) {
-				printf("Error in opening device\n");
+				printf("Error in opening device %d\n", r);
 				return -EACCES;
 			}
 			else
