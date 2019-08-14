@@ -15,6 +15,7 @@
 #include <getopt.h>
 #include <string.h>
 
+#include <libusb-1.0/libusb.h>
 #include "../include/cyusb.h"
 
 /********** Cut and paste the following & modify as required  **********/
@@ -82,7 +83,7 @@ int main(int argc, char **argv)
 		   printf("No device found\n");
 		   return 0;
 	}
-	r = cyusb_kernel_driver_active(cyusb_gethandle(0), interface);
+	r = libusb_kernel_driver_active(cyusb_gethandle(0), interface);
 	if ( r == 1 ) {
 	   printf("A kernel driver has already claimed this interface\n");
 	   kernel_attached = 1;
@@ -97,7 +98,7 @@ int main(int argc, char **argv)
 		printf("Do you wish to attach/reattach a kernel driver ? (1=yes,0=no) : ");
 		scanf("%d", &opt);
 		if ( opt == 1 ) {
-		   r = cyusb_attach_kernel_driver(cyusb_gethandle(0), interface);
+		   r = libusb_attach_kernel_driver(cyusb_gethandle(0), interface);
 		   if ( r == 0 ) {
 		 	printf("Successfully attached kernel driver for this interface\n");
 			kernel_attached = 1;
@@ -113,7 +114,7 @@ int main(int argc, char **argv)
 	   printf("Do you wish to detach the kernel driver ? (1=yes,0=no) : ");
 	   scanf("%d",&opt);
 	   if ( opt == 1 ) {
-	      	r = cyusb_detach_kernel_driver(cyusb_gethandle(0), interface);
+	      	r = libusb_detach_kernel_driver(cyusb_gethandle(0), interface);
 	  	if ( r == 0 ) {
 		   printf("Successfully detached kernel driver for this interface\n");
 		}

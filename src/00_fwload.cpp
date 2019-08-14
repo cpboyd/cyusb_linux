@@ -68,7 +68,7 @@ static void dumpbuf(unsigned short, unsigned char *buf, int len)
 int main(int argc, char **argv)
 {
 	int r;
-	cyusb_handle *h = NULL;
+	libusb_device_handle *h = NULL;
 	FILE *fp = NULL;
 	struct stat statbuf;
 	unsigned char reset = 0;

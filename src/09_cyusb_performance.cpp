@@ -18,7 +18,7 @@
 #include <errno.h>
 #include <sys/time.h>
 
-
+#include <libusb-1.0/libusb.h>
 #include "../include/cyusb.h"
 
 // Variables storing the user provided application configuration.
@@ -27,7 +27,7 @@ unsigned int reqsize    = 16;	// Request size in number of packets
 unsigned int queuedepth = 16;	// Number of requests to queue
 unsigned int duration   = 100;	// Duration of the test in seconds
 
-cyusb_handle		*dev_handle = NULL;	// Handle to the USB device
+libusb_device_handle		*dev_handle = NULL;	// Handle to the USB device
 unsigned char		eptype;			// Type of endpoint (transfer type)
 unsigned int		pktsize;		// Maximum packet size for the endpoint
 
@@ -286,10 +286,10 @@ int main (
 	for (int i = 0; i < configDesc->bNumInterfaces; i++) {
 
 		// Step 4.a: Claim the interface
-		rStatus = cyusb_claim_interface (dev_handle, i);
+		rStatus = libusb_claim_interface (dev_handle, i);
 		if (rStatus != 0) {
 			printf ("%s: Failed to claim interface %d\n", argv[0], i);
-			cyusb_free_config_descriptor (configDesc);
+			libusb_free_config_descriptor (configDesc);
 			cyusb_close ();
 			return -EACCES;
 		}
@@ -309,7 +309,7 @@ int main (
 							argv[0], endpoint, i, j);
 
 					// If the alt setting is not 0, select it
-					cyusb_set_interface_alt_setting (dev_handle, i, j);
+					libusb_set_interface_alt_setting (dev_handle, i, j);
 					found_ep = true;
 					break;
 				}
@@ -323,12 +323,12 @@ int main (
 			break;
 
 		// Step 4.c: Release the interface as the endpoint was not found.
-		cyusb_release_interface (dev_handle, i);
+		libusb_release_interface (dev_handle, i);
 	}
 
 	if (!found_ep) {
 		printf ("%s: Failed to find endpoint 0x%x on device\n", argv[0], endpoint);
-		cyusb_free_config_descriptor (configDesc);
+		libusb_free_config_descriptor (configDesc);
 		cyusb_close ();
 		return (-ENOENT);
 	}
@@ -404,7 +404,7 @@ int main (
 		printf ("%s: Failed to allocate buffers and transfer structures\n", argv[0]);
 		free_transfer_buffers (databuffers, transfers);
 
-		cyusb_free_config_descriptor (configDesc);
+		libusb_free_config_descriptor (configDesc);
 		cyusb_close ();
 		return (-ENOMEM);
 	}
@@ -464,7 +464,7 @@ int main (
 	printf ("%s: Transfers completed\n", argv[0]);
 
 	free_transfer_buffers (databuffers, transfers);
-	cyusb_free_config_descriptor (configDesc);
+	libusb_free_config_descriptor (configDesc);
 	cyusb_close();
 
 	printf ("%s: Test completed\n", argv[0]);

@@ -499,13 +499,13 @@ read_fx2_firmware (
 /* Function to force FX2 CPU into (cpu_enable = 0) or out (cpu_enable != 0) of reset. */
 static int
 fx2_reset (
-		cyusb_handle *h,
+		libusb_device_handle *h,
 		int           cpu_enable)
 {
 	unsigned char reset = (cpu_enable) ? 0 : 1;
 	int r;
 
-	r = cyusb_control_transfer(h, 0x40, 0xA0, FX2_CPUCS_ADDR, 0x00, &reset, 0x01, VENDORCMD_TIMEOUT);
+	r = libusb_control_transfer(h, 0x40, 0xA0, FX2_CPUCS_ADDR, 0x00, &reset, 0x01, VENDORCMD_TIMEOUT);
 	if ( r != 1 ) {
 		fprintf (stderr, "ERROR: FX2 reset command failed\n");
 		return -1;
@@ -517,7 +517,7 @@ fx2_reset (
 /* Function to load the Vend_Ax firmware into the FX3 RAM. */
 static int
 fx2_load_vendax (
-		cyusb_handle *h)
+		libusb_device_handle *h)
 {
 	int r, j;
         unsigned int i;
@@ -539,7 +539,7 @@ fx2_load_vendax (
 			fw_p += 2;
 		}
 
-		r = cyusb_control_transfer(h, 0x40, 0xA0, address, 0x00, databuf, num_bytes, VENDORCMD_TIMEOUT);
+		r = libusb_control_transfer(h, 0x40, 0xA0, address, 0x00, databuf, num_bytes, VENDORCMD_TIMEOUT);
 		if ( r != num_bytes ) {
 			printf("Error in control_transfer\n");
 			return -2;
@@ -558,7 +558,7 @@ fx2_load_vendax (
 
 static int
 fx2_ram_download (
-		cyusb_handle *h,
+		libusb_device_handle *h,
 		const char   *filename,
 		int           extended)
 {
@@ -598,7 +598,7 @@ fx2_ram_download (
 		/* Load the external RAM part first. */
 		for (i = FX2_INT_RAMSIZE; i < address; i += EEPROM_WRITE_SIZE) {
 			length = ((address - i) > EEPROM_WRITE_SIZE) ? EEPROM_WRITE_SIZE : (address - i);
-			r = cyusb_control_transfer (h, 0x40, 0xA3, i, 0x00, &fw_buf[i], length, VENDORCMD_TIMEOUT);
+			r = libusb_control_transfer (h, 0x40, 0xA3, i, 0x00, &fw_buf[i], length, VENDORCMD_TIMEOUT);
 			if (r != length) {
 				fprintf (stderr, "Vendor write to RAM failed\n");
 				return -5;
@@ -620,7 +620,7 @@ fx2_ram_download (
 	/* Load the internal RAM part now. */
 	for (i = 0; i < address; i += EEPROM_WRITE_SIZE) {
 		length = ((address - i) > EEPROM_WRITE_SIZE) ? EEPROM_WRITE_SIZE : (address - i);
-		r = cyusb_control_transfer (h, 0x40, 0xA0, i, 0x00, &fw_buf[i], length, VENDORCMD_TIMEOUT);
+		r = libusb_control_transfer (h, 0x40, 0xA0, i, 0x00, &fw_buf[i], length, VENDORCMD_TIMEOUT);
 		if (r != length) {
 			fprintf (stderr, "Vendor write to RAM failed\n");
 			return -7;
@@ -641,7 +641,7 @@ fx2_ram_download (
 /* Function to download IIC file into an I2C EEPROM. */
 static int
 fx2_eeprom_download (
-		cyusb_handle *h,
+		libusb_device_handle *h,
 		const char   *filename,
 		int           large)
 {
@@ -688,7 +688,7 @@ fx2_eeprom_download (
 			nbr = ROUND_UP(nbr, 64);
 		else
 			nbr = ROUND_UP(nbr, 8);
-		r = cyusb_control_transfer(h, 0x40, ((large) ? 0xA9 : 0xA2), address, 0x00, buf, nbr, VENDORCMD_TIMEOUT);
+		r = libusb_control_transfer(h, 0x40, ((large) ? 0xA9 : 0xA2), address, 0x00, buf, nbr, VENDORCMD_TIMEOUT);
 		if ( r != nbr ) {
 			fprintf(stderr, "Error: Control transfer to write EEPROM failed\n");
 			close(fd);
@@ -706,7 +706,7 @@ int main (
 		int    argc,
 		char **argv)
 {
-	cyusb_handle *h;
+	libusb_device_handle *h;
 	const char *filename = NULL;
 	const char *tgt_str  = NULL;
 	fx2_fw_tgt_p tgt = FW_TARGET_NONE;

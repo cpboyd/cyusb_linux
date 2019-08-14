@@ -24,7 +24,7 @@ extern ControlCenter *mainwin;
 extern QStatusBar *sb;
 extern QProgressBar *mbar;
 
-extern cyusb_handle *h;
+extern libusb_device_handle *h;
 extern int num_devices_detected;
 
 #define FLASHPROG_VID	(0x04b4)		// USB VID for the FX3 flash programmer.
@@ -70,7 +70,7 @@ static int ram_write(unsigned char *buf, unsigned int ramAddress, int len)
 
 	while ( len > 0 ) {
 		size = (len > MAX_WRITE_SIZE) ? MAX_WRITE_SIZE : len;
-		r = cyusb_control_transfer(h, 0x40, 0xA0, GET_LSW(ramAddress), GET_MSW(ramAddress),
+		r = libusb_control_transfer(h, 0x40, 0xA0, GET_LSW(ramAddress), GET_MSW(ramAddress),
 				&buf[index], size, VENDORCMD_TIMEOUT);
 		if ( r != size ) {
 			printf("Vendor write to FX3 RAM failed\n");
@@ -184,7 +184,7 @@ int fx3_usbboot_download(const char *filename)
 				return -4;
 			}
 
-			r = cyusb_control_transfer(h, 0x40, 0xA0, GET_LSW(address), GET_MSW(address), NULL,
+			r = libusb_control_transfer(h, 0x40, 0xA0, GET_LSW(address), GET_MSW(address), NULL,
 					0, VENDORCMD_TIMEOUT);
 			if ( r != 0 )
 				printf("Ignored error in control transfer: %d\n", r);
@@ -199,12 +199,12 @@ int fx3_usbboot_download(const char *filename)
 }
 
 /* Check if the current device handle corresponds to the FX3 flash programmer. */
-static int check_fx3_flashprog(cyusb_handle *handle)
+static int check_fx3_flashprog(libusb_device_handle *handle)
 {
 	int r;
 	char local[8];
 
-	r = cyusb_control_transfer(handle, 0xC0, 0xB0, 0, 0, (unsigned char *)local, 8, VENDORCMD_TIMEOUT);
+	r = libusb_control_transfer(handle, 0xC0, 0xB0, 0, 0, (unsigned char *)local, 8, VENDORCMD_TIMEOUT);
 	if ( ( r != 8 ) || ( strncasecmp(local, "FX3PROG", 7) != 0 ) ) {
 		printf("Current device is not the FX3 flash programmer\n");
 		return -1;
@@ -218,7 +218,7 @@ static int check_fx3_flashprog(cyusb_handle *handle)
 static int get_fx3_prog_handle(void)
 {
 	char *progfile_p, *tmp;
-	cyusb_handle *handle;
+	libusb_device_handle *handle;
 	int i, j, r;
 	struct stat filestat;
 
@@ -282,7 +282,7 @@ static int i2c_write(unsigned char *buf, int devAddr, int start, int len)
 
 	while ( len > 0 ) {
 		size = (len > MAX_WRITE_SIZE) ? MAX_WRITE_SIZE : len;
-		r = cyusb_control_transfer(h, 0x40, 0xBA, devAddr, address, &buf[index], size, VENDORCMD_TIMEOUT);
+		r = libusb_control_transfer(h, 0x40, 0xBA, devAddr, address, &buf[index], size, VENDORCMD_TIMEOUT);
 		if ( r != size ) {
 			printf("Error in i2c_write\n");
 			return -1;
@@ -310,7 +310,7 @@ static int i2c_read_verify(unsigned char *expData, int devAddr, int len)
 
 	while ( len > 0 ) {
 		size = (len > MAX_WRITE_SIZE) ? MAX_WRITE_SIZE : len;
-		r = cyusb_control_transfer(h, 0xC0, 0xBB, devAddr, address, tmpBuf, size, VENDORCMD_TIMEOUT);
+		r = libusb_control_transfer(h, 0xC0, 0xBB, devAddr, address, tmpBuf, size, VENDORCMD_TIMEOUT);
 		if ( r != size ) {
 			printf("Error in i2c_read\n");
 			return -1;
@@ -432,7 +432,7 @@ static int spi_write(unsigned char *buf, int len)
 
 	while ( len > 0 ) {
 		size = ( len > MAX_WRITE_SIZE ) ? MAX_WRITE_SIZE : len;
-		r = cyusb_control_transfer(h, 0x40, 0xC2, 0, page_address, &buf[index], size, VENDORCMD_TIMEOUT);
+		r = libusb_control_transfer(h, 0x40, 0xC2, 0, page_address, &buf[index], size, VENDORCMD_TIMEOUT);
 		if ( r != size ) {
 			printf("Write to SPI flash failed\n");
 			return -1;
@@ -451,7 +451,7 @@ static int spi_erase_sector(unsigned short nsector)
 	int           timeout = 10;
 	int r;
 
-	r = cyusb_control_transfer(h, 0x40, 0xC4, 1, nsector, NULL, 0, VENDORCMD_TIMEOUT);
+	r = libusb_control_transfer(h, 0x40, 0xC4, 1, nsector, NULL, 0, VENDORCMD_TIMEOUT);
 	if (r != 0) {
 		printf("SPI sector erase failed\n");
 		return -1;
@@ -459,7 +459,7 @@ static int spi_erase_sector(unsigned short nsector)
 
 	// Wait for the SPI flash to become ready again.
 	do {
-		r = cyusb_control_transfer(h, 0xC0, 0xC4, 0, 0, &stat, 1, VENDORCMD_TIMEOUT);
+		r = libusb_control_transfer(h, 0xC0, 0xC4, 0, 0, &stat, 1, VENDORCMD_TIMEOUT);
 		if (r != 1) {
 			printf("SPI status read failed\n");
 			return -2;

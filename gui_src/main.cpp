@@ -23,6 +23,7 @@
 #include <pthread.h>
 #include <sys/time.h>
 
+#include <libusb-1.0/libusb.h>
 #include "usbmethods.h"
 #include "../include/controlcenter.h"
 #include "../include/cyusb.h"
@@ -30,7 +31,7 @@
 ControlCenter *mainwin = NULL;
 QProgressBar  *mbar = NULL;
 QStatusBar *sb = NULL;
-cyusb_handle  *h = NULL;
+libusb_device_handle  *h = NULL;
 int num_devices_detected;
 int current_device_index = -1;
 
@@ -135,13 +136,13 @@ static void update_devlist()
 		}
 		num_interfaces = config_desc->bNumInterfaces;
 		while (num_interfaces){
-			if (cyusb_kernel_driver_active (h, index)){
-				cyusb_detach_kernel_driver (h, index);
+			if (libusb_kernel_driver_active (h, index)){
+				libusb_detach_kernel_driver (h, index);
 			}
 			index++;
 			num_interfaces--;
 		}
-		cyusb_free_config_descriptor (config_desc);
+		libusb_free_config_descriptor (config_desc);
 	}
 }
 static void disable_vendor_extensions()
@@ -170,7 +171,7 @@ static void detect_device(void)
 	int r;
 	unsigned char byte = 0;
 
-	r = cyusb_control_transfer(h, 0xC0, 0xA0, 0xE600, 0x00, &byte, 1, 1000);
+	r = libusb_control_transfer(h, 0xC0, 0xA0, 0xE600, 0x00, &byte, 1, 1000);
 	if ( r == 1 ) {
 		mainwin->label_devtype->setText("FX2");
 		enable_vendor_extensions();
@@ -263,7 +264,7 @@ void ControlCenter::on_streamer_control_start_clicked ()
 
 			// Select the alternate interface again, so that the
 			// host frees up enough bandwidth for the endpoint.
-			cyusb_set_interface_alt_setting (h, iface, aiface);
+			libusb_set_interface_alt_setting (h, iface, aiface);
 		}
 		else {
 			eptype = LIBUSB_TRANSFER_TYPE_INTERRUPT;
@@ -308,7 +309,7 @@ static void check_for_kernel_driver(void)
 	int r;
 	int v = mainwin->sb_selectIf->value();
 
-	r = cyusb_kernel_driver_active(h, v);
+	r = libusb_kernel_driver_active(h, v);
 	if ( r == 1 ) {
 		mainwin->cb_kerneldriver->setEnabled(true);
 		mainwin->cb_kerneldriver->setChecked(true);
@@ -444,9 +445,9 @@ void ControlCenter::on_pb_setAltIf_clicked()
 	int i = mainwin->sb_selectIf->value();
 	int a = mainwin->sb_selectAIf->value();
 
-	r1 = cyusb_claim_interface(h, i);
+	r1 = libusb_claim_interface(h, i);
 	if ( r1 == 0 ) {
-		r2 = cyusb_set_interface_alt_setting(h, i, a);
+		r2 = libusb_set_interface_alt_setting(h, i, a);
 		if ( r2 != 0 ) {
 			libusb_error(r2, "Error in setting Alternate Interface");
 		}
@@ -677,7 +678,7 @@ void get_config_details()
 	sprintf(tbuf,"</CONFIGURATION>");
 	mainwin->lw_desc->addItem(QString(tbuf));
 
-	cyusb_free_config_descriptor(desc);
+	libusb_free_config_descriptor(desc);
 
 	check_for_kernel_driver();
 	update_summary();
@@ -750,7 +751,7 @@ void get_device_details()
 	check_for_kernel_driver();
 	detect_device();
 	mainwin->on_pb_setIFace_clicked();
-	cyusb_free_config_descriptor (config_desc);
+	libusb_free_config_descriptor (config_desc);
 }
 
 static void clear_widgets()
@@ -791,9 +792,9 @@ static void set_if_aif()
 	int i = mainwin->sb_selectIf->value();
 	int a = mainwin->sb_selectAIf->value();
 
-	r1 = cyusb_claim_interface(h, i);
+	r1 = libusb_claim_interface(h, i);
 	if ( r1 == 0 ) {
-		r2 = cyusb_set_interface_alt_setting(h, i, a);
+		r2 = libusb_set_interface_alt_setting(h, i, a);
 		if ( r2 != 0 ) {
 			libusb_error(r2, "Error in setting Alternate Interface");
 			return;
@@ -828,7 +829,7 @@ void ControlCenter::on_pb_kerneldetach_clicked()
 {
 	int r;
 
-	r = cyusb_detach_kernel_driver(h, mainwin->sb_selectIf->value());
+	r = libusb_detach_kernel_driver(h, mainwin->sb_selectIf->value());
 	if ( r == 0 ) {
 		mainwin->cb_kerneldriver->setEnabled(true);
 		mainwin->cb_kerneldriver->setChecked(false);
@@ -958,7 +959,7 @@ void ControlCenter::on_pb_reset_clicked()
 		return ;
 	}
 
-	cyusb_reset_device(h);	
+	libusb_reset_device(h);	
 	QMessageBox mb;
 	mb.setText("Device reset");
 	mb.exec();
@@ -1228,7 +1229,7 @@ void ControlCenter::on_pb_execvc_clicked()
 			bmReqType, bRequest, wValue, wIndex, wLength);
 
 	if ( bmReqType == 0x40 ) {
-		r = cyusb_control_transfer(h, bmReqType, bRequest, wValue, wIndex, (unsigned char *)le3_out_data, wLength, 1000);
+		r = libusb_control_transfer(h, bmReqType, bRequest, wValue, wIndex, (unsigned char *)le3_out_data, wLength, 1000);
 		if (r != wLength ) {
 			sprintf (msg, "Vendor command failed\n\n");
 			mainwin->lw3->addItem(msg);
@@ -1246,7 +1247,7 @@ void ControlCenter::on_pb_execvc_clicked()
 	}
 	else {
 		memset(data,' ',4096);
-		r = cyusb_control_transfer(h, bmReqType, bRequest, wValue, wIndex, (unsigned char *)data, wLength, 1000);
+		r = libusb_control_transfer(h, bmReqType, bRequest, wValue, wIndex, (unsigned char *)data, wLength, 1000);
 		if (r != wLength ) {
 			sprintf (msg, "Vendor command failed\n\n");
 			mainwin->lw3->addItem(msg);
@@ -1463,7 +1464,7 @@ static void clearhalt_in()
 	bool ok;
 
 	ep = mainwin->cb6_in->currentText().toInt(&ok, 16);
-	r = cyusb_clear_halt(h, ep);
+	r = libusb_clear_halt(h, ep);
 	if ( r ) {
 		libusb_error(r, "Error while automatically clearing halt condition on IN pipe");
 		return;
@@ -1477,7 +1478,7 @@ static void clearhalt_out()
 	bool ok;
 
 	ep = mainwin->cb6_out->currentText().toInt(&ok, 16);
-	r = cyusb_clear_halt(h, ep);
+	r = libusb_clear_halt(h, ep);
 	if ( r ) {
 		libusb_error(r, "Error while automatically clearing halt condition on OUT pipe");
 		return;
@@ -1489,12 +1490,15 @@ void ControlCenter::on_pb6_rcv_clicked()
 	int r;
 	int transferred = 0;
 	bool ok;
+	unsigned char ep;
 	unsigned char *buf;
 	char tmpbuf[10];
 
+	ep = mainwin->cb6_in->currentText().toInt(&ok, 16);
+
 	if ( mainwin->cb6_loop->isChecked() ) {
 		buf = (unsigned char *)malloc(data_count);
-		r = cyusb_bulk_transfer(h, mainwin->cb6_in->currentText().toInt(&ok, 16), buf, 
+		r = libusb_bulk_transfer(h, ep, buf, 
 				data_count, &transferred, 1000);
 		printf("Bytes read from device = %d\n",transferred);
 		if ( r ) {
@@ -1512,9 +1516,10 @@ void ControlCenter::on_pb6_rcv_clicked()
 		}
 	}
 	else {
-		buf = (unsigned char *)malloc(mainwin->le6_size->text().toInt(&ok, 10));	      
-		r = cyusb_bulk_transfer(h, mainwin->cb6_in->currentText().toInt(&ok, 16), buf, 
-				mainwin->le6_size->text().toInt(&ok, 10), &transferred, 1000);
+		r = mainwin->le6_size->text().toInt(&ok, 10);
+		buf = (unsigned char *)malloc(r);
+		r = libusb_bulk_transfer(h, ep, buf, 
+				r, &transferred, 1000);
 		printf("Bytes read from device = %d\n",transferred);
 		dump_data6_in(transferred, buf);
 		cum_data_in += transferred;
@@ -1536,7 +1541,7 @@ void ControlCenter::pb6_send_file_selected(unsigned char *buf, int sz)
 	bool ok;
 	char tmpbuf[10];
 
-	r = cyusb_bulk_transfer(h, mainwin->cb6_out->currentText().toInt(&ok, 16), buf, sz, &transferred, 1000);
+	r = libusb_bulk_transfer(h, mainwin->cb6_out->currentText().toInt(&ok, 16), buf, sz, &transferred, 1000);
 	printf("Bytes sent to device = %d\n",transferred);
 	if ( r ) {
 		libusb_error(r, "Error in bulk write!");
@@ -1594,7 +1599,7 @@ void ControlCenter::pb6_send_nofile_selected()
 	cum_data_out = 0;
 	cum_data_in  = 0;
 
-	r = cyusb_bulk_transfer(h, mainwin->cb6_out->currentText().toInt(&ok, 16), buf, 
+	r = libusb_bulk_transfer(h, mainwin->cb6_out->currentText().toInt(&ok, 16), buf, 
 			sz, &transferred, 1000);
 
 	printf("Bytes sent to device = %d\n",transferred);
@@ -1623,7 +1628,7 @@ void ControlCenter::on_pb6_clearhalt_out_clicked()
 	bool ok;
 
 	ep = cb6_out->currentText().toInt(&ok, 16);
-	r = cyusb_clear_halt(h, ep);
+	r = libusb_clear_halt(h, ep);
 	if ( r ) {
 		libusb_error(r, "Error while clearing halt condition on OUT pipe");
 		return;
@@ -1641,7 +1646,7 @@ void ControlCenter::on_pb6_clearhalt_in_clicked()
 	bool ok;
 
 	ep = cb6_in->currentText().toInt(&ok, 16);
-	r = cyusb_clear_halt(h, ep);
+	r = libusb_clear_halt(h, ep);
 	if ( r ) {
 		libusb_error(r, "Error while clearing halt condition on IN pipe");
 		return;
@@ -1659,7 +1664,7 @@ void ControlCenter::on_pb7_clearhalt_out_clicked()
 	bool ok;
 
 	ep = cb7_out->currentText().toInt(&ok, 16);
-	r = cyusb_clear_halt(h, ep);
+	r = libusb_clear_halt(h, ep);
 	if ( r ) {
 		libusb_error(r, "Error while clearing halt condition on OUT pipe");
 		return;
@@ -1677,7 +1682,7 @@ void ControlCenter::on_pb7_clearhalt_in_clicked()
 	bool ok;
 
 	ep = cb7_in->currentText().toInt(&ok, 16);
-	r = cyusb_clear_halt(h, ep);
+	r = libusb_clear_halt(h, ep);
 	if ( r ) {
 		libusb_error(r, "Error while clearing halt condition on IN pipe");
 		return;

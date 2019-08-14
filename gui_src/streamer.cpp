@@ -22,7 +22,7 @@
 #include "../include/controlcenter.h"
 
 extern ControlCenter *mainwin;
-extern cyusb_handle  *h;
+extern libusb_device_handle  *h;
 
 // Variables storing the user provided application configuration.
 static unsigned int	endpoint   = 0;		// Endpoint to be tested
@@ -220,7 +220,7 @@ static void *
 streamer_thread_func (
 		void *arg)
 {
-	cyusb_handle *dev_handle = (cyusb_handle *)arg;
+	libusb_device_handle *dev_handle = (libusb_device_handle *)arg;
 	struct libusb_transfer **transfers = NULL;		// List of transfer structures.
 	unsigned char **databuffers = NULL;			// List of data buffers.
 	int  rStatus;

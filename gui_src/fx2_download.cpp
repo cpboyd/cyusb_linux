@@ -267,7 +267,7 @@ static char fx2_vendax[][256] = {
 #define FX2_MAX_FW_SIZE		(0x10000)
 
 extern ControlCenter *mainwin;
-extern cyusb_handle *h;
+extern libusb_device_handle *h;
 extern QStatusBar *sb;
 extern QMainWindow *mw;
 
@@ -303,7 +303,7 @@ static int fx2_reset(int cpu_enable)
 	unsigned char reset = (cpu_enable) ? 0 : 1;
 	int r;
 
-	r = cyusb_control_transfer(h, 0x40, 0xA0, FX2_CPUCS_ADDR, 0x00, &reset, 0x01, VENDORCMD_TIMEOUT);
+	r = libusb_control_transfer(h, 0x40, 0xA0, FX2_CPUCS_ADDR, 0x00, &reset, 0x01, VENDORCMD_TIMEOUT);
 	if ( r != 1 ) {
 		printf("FX2 reset command failed\n");
 		return -1;
@@ -538,7 +538,7 @@ static int fx2_load_vendax(void)
 			fw_p += 2;
 		}
 
-		r = cyusb_control_transfer(h, 0x40, 0xA0, address, 0x00, databuf, num_bytes, VENDORCMD_TIMEOUT);
+		r = libusb_control_transfer(h, 0x40, 0xA0, address, 0x00, databuf, num_bytes, VENDORCMD_TIMEOUT);
 		if ( r != num_bytes ) {
 			printf("Error in control_transfer\n");
 			return -2;
@@ -604,7 +604,7 @@ int fx2_ram_download(const char *filename, int extended)
 		/* Load the external RAM part first. */
 		for (i = FX2_INT_RAMSIZE; i < maxaddr; i += EEPROM_WRITE_SIZE) {
 			length = ((maxaddr - i) > EEPROM_WRITE_SIZE) ? EEPROM_WRITE_SIZE : (maxaddr - i);
-			r = cyusb_control_transfer (h, 0x40, 0xA3, i, 0x00, &fw_buf[i], length, VENDORCMD_TIMEOUT);
+			r = libusb_control_transfer (h, 0x40, 0xA3, i, 0x00, &fw_buf[i], length, VENDORCMD_TIMEOUT);
 			if (r != (int)length) {
 				fprintf (stderr, "Vendor write to RAM failed\n");
 				sb->removeWidget(bar);
@@ -632,7 +632,7 @@ int fx2_ram_download(const char *filename, int extended)
 	/* Load the internal RAM part now. */
 	for (i = 0; i < maxaddr; i += EEPROM_WRITE_SIZE) {
 		length = ((maxaddr - i) > EEPROM_WRITE_SIZE) ? EEPROM_WRITE_SIZE : (maxaddr - i);
-		r = cyusb_control_transfer (h, 0x40, 0xA0, i, 0x00, &fw_buf[i], length, VENDORCMD_TIMEOUT);
+		r = libusb_control_transfer (h, 0x40, 0xA0, i, 0x00, &fw_buf[i], length, VENDORCMD_TIMEOUT);
 		if (r != (int)length) {
 			fprintf (stderr, "Vendor write to RAM failed\n");
 			sb->removeWidget(bar);
@@ -708,7 +708,7 @@ int fx2_eeprom_download(const char *filename, int large)
 			nbr = ROUND_UP(nbr, 64);
 		else
 			nbr = ROUND_UP(nbr, 8);
-		r = cyusb_control_transfer(h, 0x40, ((large) ? 0xA9 : 0xA2), address, 0x00, buf, nbr, VENDORCMD_TIMEOUT);
+		r = libusb_control_transfer(h, 0x40, ((large) ? 0xA9 : 0xA2), address, 0x00, buf, nbr, VENDORCMD_TIMEOUT);
 		printf("Control transfer to %d returned %d\n", address, r);
 		if ( r != nbr ) {
 			printf("Error in control_transfer\n");

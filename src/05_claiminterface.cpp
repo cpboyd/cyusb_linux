@@ -17,6 +17,7 @@
 #include <string.h>
 #include <signal.h>
 
+#include <libusb-1.0/libusb.h>
 #include "../include/cyusb.h"
 
 /********** Cut and paste the following & modify as required  **********/
@@ -52,7 +53,7 @@ static void validate_inputs(void)
 static void sighandler(int signo)
 {
 	printf("Signal to quit received\n");
-	cyusb_release_interface(cyusb_gethandle(0), interface);
+	libusb_release_interface(cyusb_gethandle(0), interface);
 	cyusb_close();
 	exit(0);
 }
@@ -97,7 +98,7 @@ int main(int argc, char **argv)
 	printf("Enter interface number you wish to claim : ");
 	scanf("%d",&interface);
 
-	r = cyusb_kernel_driver_active(cyusb_gethandle(0), interface);
+	r = libusb_kernel_driver_active(cyusb_gethandle(0), interface);
 	if ( r == 1 ) {
 	   printf("A kernel driver has already claimed this interface\n");
 	   kernel_attached = 1;
@@ -108,7 +109,7 @@ int main(int argc, char **argv)
 	   return r;
 	}
 	if ( kernel_attached ) {
-	      	r = cyusb_detach_kernel_driver(cyusb_gethandle(0), interface);
+	      	r = libusb_detach_kernel_driver(cyusb_gethandle(0), interface);
 	  	if ( r == 0 ) {
 		   printf("Successfully detached kernel driver for this interface\n");
 		}
@@ -118,7 +119,7 @@ int main(int argc, char **argv)
 			return r;
 		}
 	}
-	r = cyusb_claim_interface(cyusb_gethandle(0), interface);
+	r = libusb_claim_interface(cyusb_gethandle(0), interface);
 	if ( r == 0 ) {
 	   printf("Interface %d claimed successfully\n",interface);
 	}

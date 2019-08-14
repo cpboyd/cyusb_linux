@@ -146,7 +146,7 @@ parse_configfile (
  */
 static int
 device_is_of_interest (
-		cyusb_device *d)
+		libusb_device *d)
 {
 	int i;
 	struct libusb_device_descriptor desc;
@@ -170,7 +170,7 @@ device_is_of_interest (
  */
 unsigned short
 cyusb_getvendor (
-		cyusb_handle *h)
+		libusb_device_handle *h)
 {
 	struct libusb_device_descriptor d;
 	cyusb_get_device_descriptor(h, &d);
@@ -182,7 +182,7 @@ cyusb_getvendor (
 */
 unsigned short
 cyusb_getproduct (
-		cyusb_handle *h)
+		libusb_device_handle *h)
 {
 	struct libusb_device_descriptor d;
 	cyusb_get_device_descriptor(h, &d);
@@ -196,8 +196,8 @@ static int
 renumerate (
 		void)
 {
-	cyusb_device *dev = NULL;
-	cyusb_handle *handle = NULL;
+	libusb_device *dev = NULL;
+	libusb_device_handle *handle = NULL;
 	int           numdev;
 	int           i;
 	int           r;
@@ -210,7 +210,7 @@ renumerate (
 
 	nid = 0;
 	for ( i = 0; i < numdev; ++i ) {
-		cyusb_device *tdev = list[i];
+		libusb_device *tdev = list[i];
 		if ( device_is_of_interest(tdev) ) {
 			cydev[nid].dev = tdev;
 			r = libusb_open(tdev, &cydev[nid].handle);
@@ -271,7 +271,7 @@ int cyusb_open (
 		unsigned short pid)
 {
 	int r;
-	cyusb_handle *h = NULL;
+	libusb_device_handle *h = NULL;
 
 	r = libusb_init(NULL);
 	if (r) {
@@ -352,7 +352,7 @@ cyusb_error (
 /* cyusb_gethandle:
    Get a handle to the USB device with specified index.
  */
-cyusb_handle *
+libusb_device_handle *
 cyusb_gethandle (
 		int index)
 {
@@ -381,9 +381,9 @@ cyusb_close (
  */
 int
 cyusb_get_busnumber (
-		cyusb_handle *h)
+		libusb_device_handle *h)
 {
-	cyusb_device *tdev = libusb_get_device(h);
+	libusb_device *tdev = libusb_get_device(h);
 	return libusb_get_bus_number( tdev );
 }
 
@@ -392,9 +392,9 @@ cyusb_get_busnumber (
  */
 int
 cyusb_get_devaddr (
-		cyusb_handle *h)
+		libusb_device_handle *h)
 {
-	cyusb_device *tdev = libusb_get_device(h);
+	libusb_device *tdev = libusb_get_device(h);
 	return libusb_get_device_address( tdev );
 }
 
@@ -403,10 +403,10 @@ cyusb_get_devaddr (
  */
 int
 cyusb_get_max_packet_size (
-		cyusb_handle *h,
+		libusb_device_handle *h,
 		unsigned char endpoint)
 {
-	cyusb_device *tdev = libusb_get_device(h);
+	libusb_device *tdev = libusb_get_device(h);
 	return ( libusb_get_max_packet_size(tdev, endpoint) );
 }
 
@@ -416,123 +416,11 @@ cyusb_get_max_packet_size (
  */
 int
 cyusb_get_max_iso_packet_size (
-		cyusb_handle *h,
+		libusb_device_handle *h,
 		unsigned char endpoint)
 {
-	cyusb_device *tdev = libusb_get_device(h);
+	libusb_device *tdev = libusb_get_device(h);
 	return ( libusb_get_max_iso_packet_size(tdev, endpoint) );
-}
-
-/* cyusb_get_configuration:
-   Get the id of the active configuration on the specified USB device.
- */
-int
-cyusb_get_configuration (
-		cyusb_handle *h,
-		int *config)
-{
-	return ( libusb_get_configuration(h, config) );
-}
-
-/* cyusb_set_configuration:
-   Set the active configuration for the specified USB device.
- */
-int
-cyusb_set_configuration (
-		cyusb_handle *h,
-		int config)
-{
-	return ( libusb_set_configuration(h, config) );
-}
-
-/* cyusb_claim_interface:
-   Claim the specified USB device interface, so that cyusb/libusb APIs can be used for transfers on the
-   corresponding endpoints.
- */
-int
-cyusb_claim_interface (
-		cyusb_handle *h,
-	       	int interface)
-{
-	return ( libusb_claim_interface(h, interface) );
-}
-
-/* cyusb_release_interface:
-   Release an interface previously claimed using cyusb_claim_interface.
- */
-int
-cyusb_release_interface (
-		cyusb_handle *h,
-		int interface)
-{
-	return ( libusb_release_interface(h, interface) );
-}
-
-/* cyusb_set_interface_alt_setting:
-   Select the alternate setting for the specified USB device and interface.
- */
-int
-cyusb_set_interface_alt_setting (
-		cyusb_handle *h,
-	       	int interface,
-	       	int altsetting)
-{
-	return ( libusb_set_interface_alt_setting(h, interface, altsetting) );
-}
-
-/* cyusb_clear_halt:
-   Clear the STALL or HALT condition on the specified endpoint.
- */
-int
-cyusb_clear_halt (
-		cyusb_handle *h,
-		unsigned char endpoint)
-{
-	return ( libusb_clear_halt(h, endpoint) );
-}
-
-/* cyusb_reset_device:
-   Perform a USB port reset to re-initialize the specified USB device.
- */
-int
-cyusb_reset_device (
-		cyusb_handle *h)
-{
-	return ( libusb_reset_device(h) );
-}
-
-/* cyusb_kernel_driver_active:
-   Check whether a Kernel driver is currently bound to the specified USB device and interface. The cyusb/libusb
-   APIs cannot be used on an interface while a kernel driver is active.
- */
-int
-cyusb_kernel_driver_active (
-		cyusb_handle *h,
-	       	int interface)
-{
-	return ( libusb_kernel_driver_active(h, interface) );
-}
-
-/* cyusb_detach_kernel_driver:
-   Detach the kernel driver from the specified USB device and interface, so that the APIs can be used.
- */
-int
-cyusb_detach_kernel_driver (
-		cyusb_handle *h,
-	       	int interface)
-{
-	return ( libusb_detach_kernel_driver(h, interface) );
-}
-
-/* cyusb_attach_kernel_driver:
-   Re-attach the kernel driver from the specified USB device and interface.
- */
-int
-cyusb_attach_kernel_driver (
-		cyusb_handle *h,
-	       	int interface)
-{
-	return ( libusb_attach_kernel_driver(h, interface) );
 }
 
 /* cyusb_get_device_descriptor:
@@ -540,10 +428,10 @@ cyusb_attach_kernel_driver (
  */
 int
 cyusb_get_device_descriptor (
-		cyusb_handle *h,
+		libusb_device_handle *h,
 	       	struct libusb_device_descriptor *desc)
 {
-	cyusb_device *tdev = libusb_get_device(h);
+	libusb_device *tdev = libusb_get_device(h);
 	return ( libusb_get_device_descriptor(tdev, desc ) );
 }
 
@@ -552,10 +440,10 @@ cyusb_get_device_descriptor (
  */
 int
 cyusb_get_active_config_descriptor (
-		cyusb_handle *h,
+		libusb_device_handle *h,
 	       	struct libusb_config_descriptor **config)
 {
-	cyusb_device *tdev = libusb_get_device(h);
+	libusb_device *tdev = libusb_get_device(h);
 	return ( libusb_get_active_config_descriptor(tdev, config) );
 }
 
@@ -564,11 +452,11 @@ cyusb_get_active_config_descriptor (
  */
 int
 cyusb_get_config_descriptor (
-		cyusb_handle *h,
+		libusb_device_handle *h,
 	       	unsigned char config_index,
 	       	struct libusb_config_descriptor **config)
 {
-	cyusb_device *tdev = libusb_get_device(h);
+	libusb_device *tdev = libusb_get_device(h);
 	return ( libusb_get_config_descriptor(tdev, config_index, config) );
 }
 
@@ -577,23 +465,13 @@ cyusb_get_config_descriptor (
  */
 int
 cyusb_get_config_descriptor_by_value (
-		cyusb_handle *h,
+		libusb_device_handle *h,
 	       	unsigned char bConfigurationValue,
 		struct usb_config_descriptor **config)
 {
-	cyusb_device *tdev = libusb_get_device(h);
+	libusb_device *tdev = libusb_get_device(h);
 	return ( libusb_get_config_descriptor_by_value(tdev, bConfigurationValue,
 				(struct libusb_config_descriptor **)config) );
-}
-
-/* cyusb_free_config_descriptor:
-   Free the configuration descriptor structure after it has been used.
- */
-void
-cyusb_free_config_descriptor (
-		struct libusb_config_descriptor *config)
-{
-	libusb_free_config_descriptor( (libusb_config_descriptor *)config );
 }
 
 /* cyusb_get_string_descriptor_ascii:
@@ -601,124 +479,13 @@ cyusb_free_config_descriptor (
  */
 int
 cyusb_get_string_descriptor_ascii (
-		cyusb_handle *h,
+		libusb_device_handle *h,
 	       	unsigned char index,
 	       	unsigned char *data,
 		int length)
 {
-	cyusb_device *tdev = libusb_get_device(h);
+	libusb_device *tdev = libusb_get_device(h);
 	return ( libusb_get_string_descriptor_ascii(h, index, data, length) );
-}
-
-/* cyusb_get_descriptor:
-   Get a USB descriptor given the type and index.
- */
-int
-cyusb_get_descriptor (
-		cyusb_handle *h,
-	       	unsigned char desc_type,
-	       	unsigned char desc_index,
-	       	unsigned char *data,
-		int len)
-{
-	return ( libusb_get_descriptor(h, desc_type, desc_index, data, len) );
-}
-
-/* cyusb_get_string_descriptor:
-   Get the USB string descriptor with the specified index.
- */
-int
-cyusb_get_string_descriptor (
-		cyusb_handle *h,
-	       	unsigned char desc_index,
-	       	unsigned short langid,
-		unsigned char *data,
-	       	int len)
-{
-	return ( libusb_get_string_descriptor(h, desc_index, langid, data, len) );
-}
-
-/* cyusb_control_transfer:
-   Perform the desired USB control transfer (can be read or write based on the bmRequestType value).
- */
-int
-cyusb_control_transfer (
-		cyusb_handle *h,
-	       	unsigned char bmRequestType,
-	       	unsigned char bRequest,
-		unsigned short wValue,
-	       	unsigned short wIndex,
-	       	unsigned char *data,
-	       	unsigned short wLength,
-		unsigned int timeout)
-{
-	return ( libusb_control_transfer(h, bmRequestType, bRequest, wValue, wIndex, data, wLength, timeout) );
-}
-
-/* cyusb_control_read:
-   Perform a read transfer on the USB control endpoint.
- */
-int
-cyusb_control_read (
-		cyusb_handle *h,
-		unsigned char bmRequestType,
-	       	unsigned char bRequest,
-		unsigned short wValue,
-	       	unsigned short wIndex,
-	       	unsigned char *data,
-	       	unsigned short wLength,
-		unsigned int timeout)
-{
-	/* Set the direction bit to indicate a read transfer. */
-	return ( libusb_control_transfer(h, bmRequestType | 0x80, bRequest, wValue, wIndex, data, wLength, timeout) );
-}
-
-/* cyusb_control_write:
-   Perform a write transfer on the USB control endpoint. This can be a zero byte (no data) transfer as well.
- */
-int
-cyusb_control_write (
-		cyusb_handle *h,
-	       	unsigned char bmRequestType,
-	       	unsigned char bRequest,
-		unsigned short wValue,
-	       	unsigned short wIndex,
-	       	unsigned char *data,
-	       	unsigned short wLength,
-		unsigned int timeout)
-{
-	/* Clear the direction bit to indicate a write transfer. */
-	return ( libusb_control_transfer(h, bmRequestType & 0x7F, bRequest, wValue, wIndex, data, wLength, timeout) );
-}
-
-/* cyusb_bulk_transfer:
-   Perform a data transfer on a USB Bulk endpoint.
- */
-int
-cyusb_bulk_transfer (
-		cyusb_handle *h,
-	       	unsigned char endpoint,
-	       	unsigned char *data,
-	       	int length,
-		int *transferred,
-	       	int timeout)
-{
-	return ( libusb_bulk_transfer(h, endpoint, data, length, transferred, timeout) );
-}
-
-/* cyusb_interrupt_transfer:
-   Perform a data transfer on a USB interrupt endpoint.
- */
-int
-cyusb_interrupt_transfer (
-		cyusb_handle *h,
-	       	unsigned char endpoint,
-	       	unsigned char *data,
-	       	int length,
-		int *transferred,
-	       	unsigned int timeout)
-{
-	return ( libusb_interrupt_transfer(h, endpoint, data, length, transferred, timeout) );
 }
 
 /* cyusb_download_fx2:
@@ -726,7 +493,7 @@ cyusb_interrupt_transfer (
  */
 int
 cyusb_download_fx2 (
-		cyusb_handle *h,
+		libusb_device_handle *h,
 		char *filename,
 		unsigned char vendor_command)
 {
@@ -750,7 +517,7 @@ cyusb_download_fx2 (
 
 	/* Place the FX2/FX2LP CPU in reset, so that the vendor commands can be handled by the device. */
 	reset = 1;
-	r = cyusb_control_transfer(h, 0x40, 0xA0, 0xE600, 0x00, &reset, 0x01, 1000);
+	r = libusb_control_transfer(h, 0x40, 0xA0, 0xE600, 0x00, &reset, 0x01, 1000);
 	if ( !r ) {
 		printf("Error in control_transfer\n");
 		return r;
@@ -772,7 +539,7 @@ cyusb_download_fx2 (
 			dbuf[i] = strtoul(tbuf3,NULL,16);
 		}
 
-		r = cyusb_control_transfer(h, 0x40, vendor_command, address, 0x00, dbuf, num_bytes, 1000);
+		r = libusb_control_transfer(h, 0x40, vendor_command, address, 0x00, dbuf, num_bytes, 1000);
 		if ( !r ) {
 			printf("Error in control_transfer\n");
 			free(dbuf);
@@ -787,7 +554,7 @@ cyusb_download_fx2 (
 
 	/* Bring the CPU out of reset to run the newly loaded firmware. */
 	reset = 0;
-	r = cyusb_control_transfer(h, 0x40, 0xA0, 0xE600, 0x00, &reset, 0x01, 1000);
+	r = libusb_control_transfer(h, 0x40, 0xA0, 0xE600, 0x00, &reset, 0x01, 1000);
 	fclose(fp);
 	return 0;
 }
@@ -798,7 +565,7 @@ cyusb_download_fx2 (
  */
 static void
 control_transfer (
-		cyusb_handle *h,
+		libusb_device_handle *h,
 	       	unsigned int address,
 	       	unsigned char *dbuf,
 	       	int len)
@@ -817,7 +584,7 @@ control_transfer (
 		if ( balance > 4096 )
 			b = 4096;
 		else b = balance;
-		r = cyusb_control_transfer (h, 0x40, 0xA0, ( address & 0x0000ffff ), address >> 16,
+		r = libusb_control_transfer (h, 0x40, 0xA0, ( address & 0x0000ffff ), address >> 16,
 			       	&dbuf[index], b, 1000);
 		if ( r != b ) {
 			printf("Error in control_transfer\n");
@@ -837,7 +604,7 @@ control_transfer (
  */
 int
 cyusb_download_fx3 (
-		cyusb_handle *h,
+		libusb_device_handle *h,
 	       	const char *filename)
 {
 	int fd;
@@ -902,7 +669,7 @@ cyusb_download_fx3 (
 	}
 
 	sleep(1);
-	r = cyusb_control_transfer(h, 0x40, 0xA0, (program_entry & 0x0000ffff ) , program_entry >> 16, NULL, 0, 1000);
+	r = libusb_control_transfer(h, 0x40, 0xA0, (program_entry & 0x0000ffff ) , program_entry >> 16, NULL, 0, 1000);
 	if ( r ) {
 		printf("Ignored error in control_transfer: %d\n", r);
 	}

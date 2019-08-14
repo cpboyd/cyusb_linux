@@ -17,6 +17,7 @@
 #include <string.h>
 #include <pthread.h>
 
+#include <libusb-1.0/libusb.h>
 #include "../include/cyusb.h"
 
 /********** Cut and paste the following & modify as required  **********/
@@ -46,7 +47,7 @@ static void print_usage(FILE *stream, int exit_code)
 static FILE *fp = stdout;
 static int timeout_provided;
 static int timeout = 0;
-static cyusb_handle *h1 = NULL;
+static libusb_device_handle *h1 = NULL;
 
 static void validate_inputs(void)
 {
@@ -64,7 +65,7 @@ static void *reader(void *arg1)
 
 	memset(buf,'\0',64);
 	while (1) {
-		r = cyusb_bulk_transfer(h1, 0x86, buf, 64, &transferred, timeout * 1000);
+		r = libusb_bulk_transfer(h1, 0x86, buf, 64, &transferred, timeout * 1000);
 		if ( r == 0 ) {
 		   printf("%s", buf);
 		   memset(buf,'\0',64);
@@ -87,7 +88,7 @@ static void * writer(void *arg2)
 
 	memset(buf,'\0',64);
 	while ( nbr = read(0,buf,64) ) {
-		r = cyusb_bulk_transfer(h1, 0x02, buf, nbr, &transferred, timeout * 1000);
+		r = libusb_bulk_transfer(h1, 0x02, buf, nbr, &transferred, timeout * 1000);
 		if ( r == 0 ) {
 			memset(buf,'\0',64);
 			continue;
@@ -151,13 +152,13 @@ int main(int argc, char **argv)
 		cyusb_close();
 	  	return 0;
 	}
-	r = cyusb_kernel_driver_active(h1, 0);
+	r = libusb_kernel_driver_active(h1, 0);
 	if ( r != 0 ) {
 	   printf("kernel driver active. Exitting\n");
 	   cyusb_close();
 	   return 0;
 	}
-	r = cyusb_claim_interface(h1, 0);
+	r = libusb_claim_interface(h1, 0);
 	if ( r != 0 ) {
 	   printf("Error in claiming interface\n");
 	   cyusb_close();

@@ -15,6 +15,7 @@
 #include <getopt.h>
 #include <string.h>
 
+#include <libusb-1.0/libusb.h>
 #include "../include/cyusb.h"
 
 /********** Cut and paste the following & modify as required  **********/
@@ -74,7 +75,7 @@ int main(int argc, char **argv)
 		printf("No device found\n");
 		return 0;
 	}
-	r = cyusb_get_configuration(cyusb_gethandle(0),&config); 
+	r = libusb_get_configuration(cyusb_gethandle(0),&config); 
 	if ( r ) {
 		cyusb_error(r);
 		cyusb_close();
@@ -109,7 +110,7 @@ int main(int argc, char **argv)
 	sprintf(tbuf,"Max Power           = %04d\n", desc->MaxPower);
 	printf("%s",tbuf);
 
-	cyusb_free_config_descriptor (desc);
+	libusb_free_config_descriptor (desc);
 	cyusb_close();
 
 	return 0;

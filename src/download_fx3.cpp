@@ -56,7 +56,7 @@ const int i2c_eeprom_size[] =
 
 static int
 fx3_ram_write (
-		cyusb_handle  *h,
+		libusb_device_handle  *h,
 		unsigned char *buf,
 		unsigned int   ramAddress,
 		int            len)
@@ -67,7 +67,7 @@ fx3_ram_write (
 
 	while (len > 0) {
 		size = (len > MAX_WRITE_SIZE) ? MAX_WRITE_SIZE : len;
-		r = cyusb_control_transfer (h, 0x40, 0xA0, GET_LSW(ramAddress), GET_MSW(ramAddress),
+		r = libusb_control_transfer (h, 0x40, 0xA0, GET_LSW(ramAddress), GET_MSW(ramAddress),
 				&buf[index], size, VENDORCMD_TIMEOUT);
 		if (r != size) {
 			fprintf (stderr, "Error: Vendor write to FX3 RAM failed\n");
@@ -140,7 +140,7 @@ read_firmware_image (
 
 static int
 fx3_usbboot_download (
-		cyusb_handle *h,
+		libusb_device_handle *h,
 		const char   *filename)
 {
 	unsigned char *fwBuf;
@@ -186,7 +186,7 @@ fx3_usbboot_download (
 				return -4;
 			}
 
-			r = cyusb_control_transfer (h, 0x40, 0xA0, GET_LSW(address), GET_MSW(address), NULL,
+			r = libusb_control_transfer (h, 0x40, 0xA0, GET_LSW(address), GET_MSW(address), NULL,
 					0, VENDORCMD_TIMEOUT);
 			if (r != 0)
 				printf ("Info: Ignored error in control transfer: %d\n", r);
@@ -201,12 +201,12 @@ fx3_usbboot_download (
 }
 
 /* Check if the current device handle corresponds to the FX3 flash programmer. */
-static int check_fx3_flashprog (cyusb_handle *handle)
+static int check_fx3_flashprog (libusb_device_handle *handle)
 {
 	int r;
 	char local[8];
 
-	r = cyusb_control_transfer (handle, 0xC0, 0xB0, 0, 0, (unsigned char *)local, 8, VENDORCMD_TIMEOUT);
+	r = libusb_control_transfer (handle, 0xC0, 0xB0, 0, 0, (unsigned char *)local, 8, VENDORCMD_TIMEOUT);
 	if ((r != 8) || (strncasecmp (local, "FX3PROG", 7) != 0)) {
 		printf ("Info: Current device is not the FX3 flash programmer\n");
 		return -1;
@@ -219,10 +219,10 @@ static int check_fx3_flashprog (cyusb_handle *handle)
 /* Get the handle to the FX3 flash programmer device, if found. */
 static int
 get_fx3_prog_handle (
-		cyusb_handle **h)
+		libusb_device_handle **h)
 {
 	char *progfile_p, *tmp;
-	cyusb_handle *handle;
+	libusb_device_handle *handle;
 	int i, j, r;
 	struct stat filestat;
 
@@ -287,7 +287,7 @@ get_fx3_prog_handle (
 
 static int
 fx3_i2c_write (
-		cyusb_handle  *h,
+		libusb_device_handle  *h,
 		unsigned char *buf,
 		int            devAddr,
 		int            start,
@@ -300,7 +300,7 @@ fx3_i2c_write (
 
 	while (len > 0) {
 		size = (len > MAX_WRITE_SIZE) ? MAX_WRITE_SIZE : len;
-		r = cyusb_control_transfer (h, 0x40, 0xBA, devAddr, address, &buf[index], size, VENDORCMD_TIMEOUT);
+		r = libusb_control_transfer (h, 0x40, 0xBA, devAddr, address, &buf[index], size, VENDORCMD_TIMEOUT);
 		if (r != size) {
 			fprintf (stderr, "Error: I2C write failed\n");
 			return -1;
@@ -317,7 +317,7 @@ fx3_i2c_write (
 /* Function to read I2C data and compare against the expected value. */
 static int
 fx3_i2c_read_verify (
-		cyusb_handle  *h,
+		libusb_device_handle  *h,
 		unsigned char *expData,
 		int            devAddr,
 		int            len)
@@ -330,7 +330,7 @@ fx3_i2c_read_verify (
 
 	while (len > 0) {
 		size = (len > MAX_WRITE_SIZE) ? MAX_WRITE_SIZE : len;
-		r = cyusb_control_transfer (h, 0xC0, 0xBB, devAddr, address, tmpBuf, size, VENDORCMD_TIMEOUT);
+		r = libusb_control_transfer (h, 0xC0, 0xBB, devAddr, address, tmpBuf, size, VENDORCMD_TIMEOUT);
 		if (r != size) {
 			fprintf (stderr, "Error: I2C read failed\n");
 			return -1;
@@ -351,7 +351,7 @@ fx3_i2c_read_verify (
 
 int
 fx3_i2cboot_download (
-		cyusb_handle *h,
+		libusb_device_handle *h,
 		const char   *filename)
 {
 	int romsize, size;
@@ -433,7 +433,7 @@ fx3_i2cboot_download (
 
 static int
 fx3_spi_write (
-		cyusb_handle  *h,
+		libusb_device_handle  *h,
 		unsigned char *buf,
 		int            len)
 {
@@ -444,7 +444,7 @@ fx3_spi_write (
 
 	while (len > 0) {
 		size = (len > MAX_WRITE_SIZE) ? MAX_WRITE_SIZE : len;
-		r = cyusb_control_transfer (h, 0x40, 0xC2, 0, page_address, &buf[index], size, VENDORCMD_TIMEOUT);
+		r = libusb_control_transfer (h, 0x40, 0xC2, 0, page_address, &buf[index], size, VENDORCMD_TIMEOUT);
 		if (r != size) {
 			fprintf (stderr, "Error: Write to SPI flash failed\n");
 			return -1;
@@ -459,14 +459,14 @@ fx3_spi_write (
 
 static int
 fx3_spi_erase_sector (
-		cyusb_handle   *h,
+		libusb_device_handle   *h,
 		unsigned short  nsector)
 {
 	unsigned char stat;
 	int           timeout = 10;
 	int r;
 
-	r = cyusb_control_transfer (h, 0x40, 0xC4, 1, nsector, NULL, 0, VENDORCMD_TIMEOUT);
+	r = libusb_control_transfer (h, 0x40, 0xC4, 1, nsector, NULL, 0, VENDORCMD_TIMEOUT);
 	if (r != 0) {
 		fprintf (stderr, "Error: SPI sector erase failed\n");
 		return -1;
@@ -474,7 +474,7 @@ fx3_spi_erase_sector (
 
 	// Wait for the SPI flash to become ready again.
 	do {
-		r = cyusb_control_transfer (h, 0xC0, 0xC4, 0, 0, &stat, 1, VENDORCMD_TIMEOUT);
+		r = libusb_control_transfer (h, 0xC0, 0xC4, 0, 0, &stat, 1, VENDORCMD_TIMEOUT);
 		if (r != 1) {
 			fprintf (stderr, "Error: SPI status read failed\n");
 			return -2;
@@ -494,7 +494,7 @@ fx3_spi_erase_sector (
 
 int
 fx3_spiboot_download (
-		cyusb_handle *h,
+		libusb_device_handle *h,
 		const char   *filename)
 {
 	unsigned char *fwBuf;
@@ -563,7 +563,7 @@ int main (
 		int    argc,
 		char **argv)
 {
-	cyusb_handle *h;
+	libusb_device_handle *h;
 	char         *filename = NULL;
 	char         *tgt_str  = NULL;
 	fx3_fw_target tgt = FW_TARGET_NONE;
