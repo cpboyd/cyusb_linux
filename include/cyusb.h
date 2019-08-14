@@ -84,8 +84,7 @@ extern int cyusb_open(unsigned short vid, unsigned short pid);
   Parameters   :
                  int index : Equal to the index in the cydev[] array that gets populated
                              during the cyusb_open() call described above.
-  Return Value : Returns the pointer to a struct of type libusb_device_handle, also called as
-                 libusb_device_handle.
+  Return Value : Returns the pointer to a struct of type libusb_device_handle.
  *******************************************************************************************/
 extern libusb_device_handle * cyusb_gethandle(int index);
 
@@ -100,104 +99,12 @@ extern libusb_device_handle * cyusb_gethandle(int index);
 extern unsigned short cyusb_getvendor(libusb_device_handle *);
 
 /*******************************************************************************************
-  Prototype    : unsigned short cyusb_getproduct(libusb_device_handle *);
-  Description  : This function returns a 16-bit value corresponding to the device ID given
-                 a device's handle.
-  Parameters   :
-                 libusb_device_handle *handle : Pointer to a struct of type libusb_device_handle.
-  Return Value : Returns the 16-bit product ID of the given device.
- *******************************************************************************************/
-extern unsigned short cyusb_getproduct(libusb_device_handle *);
-
-/*******************************************************************************************
   Prototype    : void cyusb_close(void);
   Description  : This function closes the libusb library and releases memory allocated to cydev[].
   Parameters   : none.
   Return Value : none.
  *******************************************************************************************/
 extern void cyusb_close(void);
-
-/*******************************************************************************************
-  Prototype    : int cyusb_get_busnumber(libusb_device_handle * handle);
-  Description  : This function returns the Bus Number pertaining to a given device handle.
-  Parameters   :
-                 libusb_device_handle *handle : The libusb device handle
-  Return Value : An integer value corresponding to the Bus Number on which the device resides.
-                 This is also the same value present in the cydev[] array.
- *******************************************************************************************/
-extern int cyusb_get_busnumber(libusb_device_handle *);
-
-/*******************************************************************************************
-  Prototype    : int cyusb_get_devaddr(libusb_device_handle * handle);
-  Description  : This function returns the device address pertaining to a given device handle
-  Parameters   :
-                 libusb_device_handle *handle : The libusb device handle
-  Return Value : An integer value corresponding to the device address (between 1 and 127).
-                 This is also the same value present in the cydev[] array.
- *******************************************************************************************/
-extern int cyusb_get_devaddr(libusb_device_handle *);
-
-/*******************************************************************************************
-  Prototype     : int cyusb_get_max_packet_size(libusb_device_handle * handle,unsigned char endpoint);
-  Description   : This function returns the max packet size that an endpoint can handle, without
-                  taking into account high-bandwidth capabiity. It is therefore only useful
-                  for Bulk, not Isochronous endpoints.
-  Parameters    :
-                  libusb_device_handle *handle   : The libusb device handle
-                  unsigned char endpoint : The endpoint number
-  Return Value  : Max packet size in bytes for the endpoint.
- *******************************************************************************************/
-extern int cyusb_get_max_packet_size(libusb_device_handle *, unsigned char endpoint);
-
-/*******************************************************************************************
-  Prototype    : int cyusb_get_max_iso_packet_size(libusb_device_handle * handle,unsigned char endpoint);
-  Description  : This function returns the max packet size that an isochronous endpoint can
-                 handle, after considering multiple transactions per microframe if present.
-  Parameters   :
-                 libusb_device_handle *handle   : The libusb device handle
-                 unsigned char endpoint : The endpoint number
-  Return Value : Maximum amount of data that an isochronous endpoint can transfer per
-                 microframe.
- *******************************************************************************************/
-extern int cyusb_get_max_iso_packet_size(libusb_device_handle *, unsigned char endpoint);
-
-/******************************************************************************************
-  Prototype    : int cyusb_get_device_descriptot(libusb_device_handle * handle,
-                     struct libusb_device_descriptor *);
-  Description  : This function returns the usb device descriptor for the given device.
-  Parameters   :
-                 libusb_device_handle *handle                  : The libusb device handle
-                 struct libusb_device_descriptor *desc : Address of a device_desc structure
-  Return Value : 0 on success, or an appropriate LIBUSB_ERROR.
- *****************************************************************************************/
-extern int cyusb_get_device_descriptor(libusb_device_handle *, struct libusb_device_descriptor *desc);
-
-/******************************************************************************************
-  Prototype    : int cyusb_get_active_config_descriptor(libusb_device_handle * handle,
-                     struct libusb_config_descriptor **);
-  Description  : This function returns the usb configuration descriptor for the given device.
-                 The descriptor structure must be freed with libusb_free_config_descriptor()
-                 explained below.
-  Parameters   :
-                 libusb_device_handle *handle                          : The libusb device handle
-                 struct libusb_configuration_descriptor **desc : Address of a config_descriptor
-  Return Value : 0 on success, or an appropriate LIBUSB_ERROR.
- ******************************************************************************************/
-extern int cyusb_get_active_config_descriptor(libusb_device_handle *, struct libusb_config_descriptor **config);
-
-/*****************************************************************************************
-  Prototype    : int cyusb_get_config_descriptor(libusb_device_handle * handle, unsigned char index,
-                     struct libusb_config_descriptor **);
-  Description  : This function returns the usb configuration descriptor with the specified
-                 index for the given device. The descriptor structure must be freed using
-                 the libusb_free_config_descriptor() call later.
-  Parameters   :
-                 libusb_device_handle *handle                          : The libusb device handle
-                 unsigned char index                           : Index of configuration you wish to retrieve.
-                 struct libusb_configuration_descriptor **desc : Address of a config_descriptor
-  Return Value : 0 on success, or an appropriate LIBUSB_ERROR.
- *****************************************************************************************/
-extern int cyusb_get_config_descriptor(libusb_device_handle *, unsigned char index, struct libusb_config_descriptor **config);
 
 /****************************************************************************************
   Prototype    : void cyusb_download_fx2(libusb_device_handle *h, char *filename,

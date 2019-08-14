@@ -176,6 +176,7 @@ int main (
 	extern char *optarg;
 	char         c;
 
+	libusb_device		*dev = NULL;	// The USB device
 	libusb_device_descriptor deviceDesc;
 	libusb_config_descriptor *configDesc;
 	libusb_interface_descriptor *interfaceDesc;
@@ -273,9 +274,10 @@ int main (
 		printf ("%s: Failed to get CyUSB device handle\n", argv[0]);
 		return -EACCES;
 	}
+	dev = libusb_get_device(dev_handle);
 
 	// Step 3: Read the configuration descriptor.
-	rStatus = cyusb_get_config_descriptor (dev_handle, 0, &configDesc);
+	rStatus = libusb_get_config_descriptor (dev, 0, &configDesc);
 	if (rStatus != 0) {
 		printf ("%s: Failed to get USB Configuration descriptor\n", argv[0]);
 		cyusb_close ();
@@ -336,7 +338,7 @@ int main (
 	// Store the endpoint type and maximum packet size
 	eptype  = endpointDesc->bmAttributes;
 
-	cyusb_get_device_descriptor (dev_handle, &deviceDesc);
+	libusb_get_device_descriptor (dev, &deviceDesc);
 	if (deviceDesc.bcdUSB >= 0x0300) {
 
 		// If this is a USB 3.0 connection, get the endpoint companion descriptor
@@ -359,7 +361,7 @@ int main (
 		// Not USB 3.0. For Isochronous endpoints, get the packet size as computed by
 		// the library. For other endpoints, use the max packet size as it is.
 		if (eptype == LIBUSB_TRANSFER_TYPE_ISOCHRONOUS)
-			pktsize = cyusb_get_max_iso_packet_size (dev_handle, endpoint);
+			pktsize = libusb_get_max_iso_packet_size (dev, endpoint);
 		else
 			pktsize = endpointDesc->wMaxPacketSize;
 

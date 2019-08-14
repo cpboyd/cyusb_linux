@@ -32,6 +32,7 @@ ControlCenter *mainwin = NULL;
 QProgressBar  *mbar = NULL;
 QStatusBar *sb = NULL;
 libusb_device_handle  *h = NULL;
+libusb_device  *dev = NULL;
 int num_devices_detected;
 int current_device_index = -1;
 
@@ -120,16 +121,19 @@ static void update_devlist()
 	int i, r, num_interfaces, index = 0;
 	char tbuf[60];
 	struct libusb_config_descriptor *config_desc = NULL;
+	struct libusb_device_descriptor desc;
 
 	mainwin->listWidget->clear();
 
 	for ( i = 0; i < num_devices_detected; ++i ) {
 		h = cyusb_gethandle(i);
+		dev = libusb_get_device(h);
+		libusb_get_device_descriptor(dev, &desc);
 		sprintf(tbuf,"VID=%04x,PID=%04x,BusNum=%02x,Addr=%d",
-				cyusb_getvendor(h), cyusb_getproduct(h),
-				cyusb_get_busnumber(h), cyusb_get_devaddr(h));
+				desc.idVendor, desc.idProduct,
+				libusb_get_bus_number(dev), libusb_get_device_address(dev));
 		mainwin->listWidget->addItem(QString(tbuf));
-		r = cyusb_get_active_config_descriptor (h, &config_desc);
+		r = libusb_get_active_config_descriptor (dev, &config_desc);
 		if ( r ) {
 			libusb_error(r, "Error in 'get_active_config_descriptor' ");
 			return;
@@ -469,7 +473,7 @@ void ControlCenter::on_pb_setIFace_clicked()
 
 	struct libusb_config_descriptor *config_desc = NULL;
 
-	r = cyusb_get_active_config_descriptor(h, &config_desc);
+	r = libusb_get_active_config_descriptor(dev, &config_desc);
 	if ( r ) libusb_error(r, "Error in 'get_active_config_descriptor' ");
 
 	N = config_desc->interface[mainwin->sb_selectIf->value()].num_altsetting;
@@ -557,8 +561,9 @@ void get_config_details()
 	struct libusb_config_descriptor *desc = NULL;
 
 	h = cyusb_gethandle(current_device_index);
+	dev = libusb_get_device(h);
 
-	r = cyusb_get_active_config_descriptor(h, &desc);
+	r = libusb_get_active_config_descriptor(dev, &desc);
 	if ( r ) {
 		libusb_error(r, "Error getting configuration descriptor");
 		return ;
@@ -652,7 +657,7 @@ void get_config_details()
 					// USB 2.0. Multiply packet size by mult for ISO endpoints
 					if (summ[summ_count].eptype == LIBUSB_TRANSFER_TYPE_ISOCHRONOUS)
 						summ[summ_count].reqsize =
-							cyusb_get_max_iso_packet_size (h, summ[summ_count].epnum);
+							libusb_get_max_iso_packet_size (dev, summ[summ_count].epnum);
 					else
 						summ[summ_count].reqsize  = summ[summ_count].maxps;
 				}
@@ -697,13 +702,14 @@ void get_device_details()
 	if ( !h ) {
 		printf("Error in getting a handle. curent_device_index = %d\n", current_device_index);
 	}
+	dev = libusb_get_device(h);
 
-	r = cyusb_get_device_descriptor(h, &desc);
+	r = libusb_get_device_descriptor(dev, &desc);
 	if ( r ) {
 		libusb_error(r, "Error getting device descriptor");
 		return ;
 	}
-	r = cyusb_get_active_config_descriptor(h, &config_desc);
+	r = libusb_get_active_config_descriptor(dev, &config_desc);
 	sprintf(tval,"%d",config_desc->bNumInterfaces);
 	mainwin->le_numIfaces->setText(tval);
 	mainwin->sb_selectIf->setEnabled(true);
@@ -1896,7 +1902,7 @@ static void in_callback( struct libusb_transfer *transfer)
 	sprintf(tbuf,"%6d",pkts_failure);
 	mainwin->label7_dropped_in->setText(tbuf);
 	ep_in = mainwin->cb7_in->currentText().toInt(&ok, 16);  
-	pktsize_in = cyusb_get_max_iso_packet_size(h, ep_in);
+	pktsize_in = libusb_get_max_iso_packet_size(dev, ep_in);
 	inrate = ( (((double)totalin * (double)pktsize_in) / (double)elapsed ) * (1000.0 / 1024.0) );
 	sprintf(ttbuf, "%8.1f", inrate);
 	mainwin->label7_ratein->setText(ttbuf);
@@ -1949,7 +1955,7 @@ static void out_callback( struct libusb_transfer *transfer)
 	sprintf(tbuf,"%6d",pkts_failure);
 	mainwin->label7_dropped_out->setText(tbuf);
 	ep_out = mainwin->cb7_out->currentText().toInt(&ok, 16);  
-	pktsize_out = cyusb_get_max_iso_packet_size(h, ep_out);
+	pktsize_out = libusb_get_max_iso_packet_size(dev, ep_out);
 	outrate = ( (((double)totalout * (double)pktsize_out) / (double)elapsed ) * (1000.0 / 1024.0) );
 	sprintf(ttbuf, "%8.1f", outrate);
 	mainwin->label7_rateout->setText(ttbuf);
@@ -1974,7 +1980,7 @@ void ControlCenter::on_pb7_rcv_clicked()
 	} 
 
 	ep_in = cb7_in->currentText().toInt(&ok, 16);  
-	pktsize_in = cyusb_get_max_iso_packet_size(h, ep_in);
+	pktsize_in = libusb_get_max_iso_packet_size(dev, ep_in);
 	sprintf(tbuf,"%9d",pktsize_in);
 	mainwin->label7_pktsize_in->setText(tbuf);
 
@@ -2031,7 +2037,7 @@ void ControlCenter::on_pb7_send_clicked()
 	} 
 
 	ep_out = cb7_out->currentText().toInt(&ok, 16);  
-	pktsize_out = cyusb_get_max_iso_packet_size(h, ep_out);
+	pktsize_out = libusb_get_max_iso_packet_size(dev, ep_out);
 	sprintf(tbuf,"%9d",pktsize_out);
 	mainwin->label7_pktsize_out->setText(tbuf);
 

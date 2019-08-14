@@ -173,20 +173,9 @@ cyusb_getvendor (
 		libusb_device_handle *h)
 {
 	struct libusb_device_descriptor d;
-	cyusb_get_device_descriptor(h, &d);
+	libusb_device *tdev = libusb_get_device(h);
+	libusb_get_device_descriptor(tdev, &d);
 	return d.idVendor;
-}
-
-/* cyusb_getproduct:
-   Get the Product ID for the current USB device.
-*/
-unsigned short
-cyusb_getproduct (
-		libusb_device_handle *h)
-{
-	struct libusb_device_descriptor d;
-	cyusb_get_device_descriptor(h, &d);
-	return d.idProduct;
 }
 
 /* renumerate:
@@ -198,6 +187,7 @@ renumerate (
 {
 	libusb_device *dev = NULL;
 	libusb_device_handle *handle = NULL;
+	struct libusb_device_descriptor desc;
 	int           numdev;
 	int           i;
 	int           r;
@@ -221,11 +211,12 @@ renumerate (
 			else
 				handle = cydev[nid].handle;
 
-			cydev[nid].vid     = cyusb_getvendor(handle);
-			cydev[nid].pid     = cyusb_getproduct(handle);
+			libusb_get_device_descriptor(tdev, &desc);
+			cydev[nid].vid     = desc.idVendor;
+			cydev[nid].pid     = desc.idProduct;
 			cydev[nid].is_open = 1;
-			cydev[nid].busnum  = cyusb_get_busnumber(handle);
-			cydev[nid].devaddr = cyusb_get_devaddr(handle);
+			cydev[nid].busnum  = libusb_get_bus_number(tdev);
+			cydev[nid].devaddr = libusb_get_device_address(tdev);
 			++nid;
 		}
 	}
@@ -271,7 +262,9 @@ int cyusb_open (
 		unsigned short pid)
 {
 	int r;
+	libusb_device *dev = NULL;
 	libusb_device_handle *h = NULL;
+	struct libusb_device_descriptor desc;
 
 	r = libusb_init(NULL);
 	if (r) {
@@ -285,13 +278,16 @@ int cyusb_open (
 		return -ENODEV;
 	}
 
-	cydev[0].dev     = libusb_get_device(h);
+	dev = libusb_get_device(h);
+	cydev[0].dev     = dev;
 	cydev[0].handle  = h;
-	cydev[0].vid     = cyusb_getvendor(h);
-	cydev[0].pid     = cyusb_getproduct(h);
+
+	libusb_get_device_descriptor(dev, &desc);
+	cydev[0].vid     = desc.idVendor;
+	cydev[0].pid     = desc.idProduct;
 	cydev[0].is_open = 1;
-	cydev[0].busnum  = cyusb_get_busnumber(h);
-	cydev[0].devaddr = cyusb_get_devaddr(h);
+	cydev[0].busnum  = libusb_get_bus_number(dev);
+	cydev[0].devaddr = libusb_get_device_address(dev);
 	nid = 1;
 
 	return 1;
@@ -376,117 +372,6 @@ cyusb_close (
 	libusb_exit(NULL);
 }
 
-/* cyusb_get_busnumber:
-   Get USB bus number on which the specified device is connected.
- */
-int
-cyusb_get_busnumber (
-		libusb_device_handle *h)
-{
-	libusb_device *tdev = libusb_get_device(h);
-	return libusb_get_bus_number( tdev );
-}
-
-/* cyusb_get_devaddr:
-   Get USB device address assigned to the specified device.
- */
-int
-cyusb_get_devaddr (
-		libusb_device_handle *h)
-{
-	libusb_device *tdev = libusb_get_device(h);
-	return libusb_get_device_address( tdev );
-}
-
-/* cyusb_get_max_packet_size:
-   Get the max packet size for the specified USB endpoint.
- */
-int
-cyusb_get_max_packet_size (
-		libusb_device_handle *h,
-		unsigned char endpoint)
-{
-	libusb_device *tdev = libusb_get_device(h);
-	return ( libusb_get_max_packet_size(tdev, endpoint) );
-}
-
-/* cyusb_get_max_iso_packet_size:
-   Calculate the maximum packet size which a specific isochronous endpoint is capable of sending or
-   receiving in the duration of 1 microframe.
- */
-int
-cyusb_get_max_iso_packet_size (
-		libusb_device_handle *h,
-		unsigned char endpoint)
-{
-	libusb_device *tdev = libusb_get_device(h);
-	return ( libusb_get_max_iso_packet_size(tdev, endpoint) );
-}
-
-/* cyusb_get_device_descriptor:
-   Get the device descriptor for the specified USB device.
- */
-int
-cyusb_get_device_descriptor (
-		libusb_device_handle *h,
-	       	struct libusb_device_descriptor *desc)
-{
-	libusb_device *tdev = libusb_get_device(h);
-	return ( libusb_get_device_descriptor(tdev, desc ) );
-}
-
-/* cyusb_get_active_config_descriptor:
-   Get the active configuration descriptor for the specified USB device.
- */
-int
-cyusb_get_active_config_descriptor (
-		libusb_device_handle *h,
-	       	struct libusb_config_descriptor **config)
-{
-	libusb_device *tdev = libusb_get_device(h);
-	return ( libusb_get_active_config_descriptor(tdev, config) );
-}
-
-/* cyusb_get_config_descriptor:
-   Get the configuration descriptor at index config_index, for the specified USB device.
- */
-int
-cyusb_get_config_descriptor (
-		libusb_device_handle *h,
-	       	unsigned char config_index,
-	       	struct libusb_config_descriptor **config)
-{
-	libusb_device *tdev = libusb_get_device(h);
-	return ( libusb_get_config_descriptor(tdev, config_index, config) );
-}
-
-/* cyusb_get_config_descriptor_by_value:
-   Get the configuration descriptor with value bConfigurationValue for the specified USB device.
- */
-int
-cyusb_get_config_descriptor_by_value (
-		libusb_device_handle *h,
-	       	unsigned char bConfigurationValue,
-		struct usb_config_descriptor **config)
-{
-	libusb_device *tdev = libusb_get_device(h);
-	return ( libusb_get_config_descriptor_by_value(tdev, bConfigurationValue,
-				(struct libusb_config_descriptor **)config) );
-}
-
-/* cyusb_get_string_descriptor_ascii:
-   Get the specified USB string descriptor in the format of an ASCII string.
- */
-int
-cyusb_get_string_descriptor_ascii (
-		libusb_device_handle *h,
-	       	unsigned char index,
-	       	unsigned char *data,
-		int length)
-{
-	libusb_device *tdev = libusb_get_device(h);
-	return ( libusb_get_string_descriptor_ascii(h, index, data, length) );
-}
 
 /* cyusb_download_fx2:
    Download firmware to the Cypress FX2/FX2LP device using USB vendor commands.

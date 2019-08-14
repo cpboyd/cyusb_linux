@@ -17,6 +17,7 @@
 #include <getopt.h>
 #include <string.h>
 
+#include <libusb-1.0/libusb.h>
 #include "../include/cyusb.h"
 
 /********** Cut and paste the following & modify as required  **********/
@@ -66,6 +67,7 @@ int main(int argc, char **argv)
 {
 	int r;
 	struct libusb_device_descriptor desc;
+	libusb_device_handle  *h = NULL;
 	char user_input = 'n';
 
 	program_name = argv[0];
@@ -127,7 +129,8 @@ int main(int argc, char **argv)
 		   return 0;
 	   }
 	}
-	r = cyusb_get_device_descriptor(cyusb_gethandle(0), &desc);
+	h = cyusb_gethandle(0);
+	r = libusb_get_device_descriptor(libusb_get_device(h), &desc);
 	if ( r ) {
 	   printf("error getting device descriptor\n");
 	   return -2;

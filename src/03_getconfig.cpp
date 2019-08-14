@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include <string.h>
+#include <errno.h>
 
 #include <libusb-1.0/libusb.h>
 #include "../include/cyusb.h"
@@ -46,6 +47,8 @@ int main(int argc, char **argv)
 	int r;
 	int config = 0;
 	struct libusb_config_descriptor *desc = NULL;
+	libusb_device_handle		*dev_handle = NULL;	// Handle to the USB device
+	libusb_device		*dev = NULL;	// The USB device
 	char tbuf[64];
 
 	program_name = argv[0];
@@ -75,7 +78,14 @@ int main(int argc, char **argv)
 		printf("No device found\n");
 		return 0;
 	}
-	r = libusb_get_configuration(cyusb_gethandle(0),&config); 
+	// Get a handle to the first CyUSB device.
+	dev_handle = cyusb_gethandle(0);
+	if (dev_handle == NULL) {
+		printf ("%s: Failed to get CyUSB device handle\n", argv[0]);
+		return -EACCES;
+	}
+	dev = libusb_get_device(dev_handle);
+	r = libusb_get_configuration(dev_handle, &config); 
 	if ( r ) {
 		cyusb_error(r);
 		cyusb_close();
@@ -87,7 +97,7 @@ int main(int argc, char **argv)
 	else
 		printf("Device configured. Current configuration = %d\n", config);
 
-	r = cyusb_get_active_config_descriptor(cyusb_gethandle(0), &desc);
+	r = libusb_get_active_config_descriptor(dev, &desc);
 	if ( r ) {
 		printf("Error retrieving config descriptor\n");
 		return r;

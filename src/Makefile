@@ -1,6 +1,6 @@
 all:
 	g++ -o 00_fwload            00_fwload.cpp            -L ../lib -l cyusb
-	g++ -o 01_getdesc           01_getdesc.cpp           -L ../lib -l cyusb
+	g++ -o 01_getdesc           01_getdesc.cpp           -L ../lib -l cyusb -l usb-1.0
 	g++ -o 03_getconfig         03_getconfig.cpp         -L ../lib -l cyusb -l usb-1.0
 	g++ -o 04_kerneldriver      04_kerneldriver.cpp      -L ../lib -l cyusb -l usb-1.0
 	g++ -o 05_claiminterface    05_claiminterface.cpp    -L ../lib -l cyusb -l usb-1.0
